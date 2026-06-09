@@ -28,4 +28,9 @@ public class TabView : MonoBehaviour
             textTab.text += FormatterTab.FormatPedido(pedido) + "\n";
         }
     }
+    public void CloseTab()
+    {
+        containerTab.SetActive(false);
+        textTab.text = "";
+    }
 }

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e8ef455c02bc2744b18418ea5d42d3d, type: 3}
-  m_Name: Abacaxi
+  m_Name: BatataFrita
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
-  ingredientName: Abacaxii
-  type: 1
+  ingredientName: Batata Frita
+  type: 21

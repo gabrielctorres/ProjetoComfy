@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
 public static class FormatterTab
 {
-    public static string FormatPedido(Pedido pedido)
+    public static string FormatPedido(Order pedido)
     {
         StringBuilder sb = new StringBuilder();
         string txtQuantity = $"<link=quantity><u>{pedido.quantity}</u></link>";

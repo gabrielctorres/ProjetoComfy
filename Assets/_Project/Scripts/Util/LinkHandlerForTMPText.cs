@@ -35,7 +35,6 @@ public class LinkHandlerForTMPText : MonoBehaviour, IPointerClickHandler
             TMP_LinkInfo linkInfo = _tmpTextBox.textInfo.linkInfo[linkTaggedText];
 
             OnClickedOnLinkEvent?.Invoke(linkInfo.GetLinkID(), linkInfo.GetLinkText());
-            Debug.Log($"Clicked on link with ID: {linkInfo.GetLinkID()} and text: {linkInfo.GetLinkText()}");
         }
     }
 
