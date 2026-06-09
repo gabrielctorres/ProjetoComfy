@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21beb60a6705be141abad796e35fafa3, type: 3}
+  m_Name: ComandaTemplate
+  m_EditorClassIdentifier: Assembly-CSharp::Tab
+  pedidos:
+  - quantity: 2
+    ingredientes:
+    - {fileID: 11400000, guid: 6f97b7cf1183883419062676189e2d2a, type: 2}
+    - {fileID: 11400000, guid: 62aeeab74ab14e949a653d8a6af31f3d, type: 2}
+  - quantity: 30
+    ingredientes:
+    - {fileID: 11400000, guid: 3334e7e3c694f9941a4640c52472c610, type: 2}
+    - {fileID: 11400000, guid: ca46b4ec883dad147ba5cc74622be784, type: 2}
+    - {fileID: 11400000, guid: 68b19aaf2aaf4bd4c8ec6d11d41017a8, type: 2}
