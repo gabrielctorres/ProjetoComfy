@@ -3,35 +3,59 @@ using UnityEngine;
 
 public interface IOrderModifier
 {
-    Order Modify(Order originalOrder);
+    Tab Modify(Tab originalTab);
 }
 
 public class SwapDrinkFoodModifier : IOrderModifier
 {
-    public Order Modify(Order originalOrder)
+
+    public Tab Modify(Tab originalTab)
     {
-        List<Ingredient> ingredients = new List<Ingredient>(originalOrder.ingredientes);
+        Tab modifiedTab = ScriptableObject.CreateInstance<Tab>();
+        modifiedTab.pedidos = new List<Order>();
 
-        int drinkIndex = -1;
-        int foodIndex = -1;
-
-        for (int i = 0; i < ingredients.Count; i++)
+        foreach (var order in originalTab.pedidos)
         {
-            if (ingredients[i].type.HasFlag(IngredientFlags.Bebida))
-                drinkIndex = i;
-
-            if (ingredients[i].type.HasFlag(IngredientFlags.Comida))
-                foodIndex = i;
+            modifiedTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
         }
 
-        if (drinkIndex != -1 && foodIndex != -1)
+        List<(int orderIdx, int ingIdx)> drinkCoordinates = new List<(int, int)>();
+        List<(int orderIdx, int ingIdx)> foodCoordinates = new List<(int, int)>();
+
+        for (int o = 0; o < modifiedTab.pedidos.Count; o++)
         {
-            Ingredient temp = ingredients[drinkIndex];
-            ingredients[drinkIndex] = ingredients[foodIndex];
-            ingredients[foodIndex] = temp;
+            List<Ingredient> ings = modifiedTab.pedidos[o].ingredientes;
+            for (int i = 0; i < ings.Count; i++)
+            {
+                if (ings[i].type.HasFlag(IngredientFlags.Bebida))
+                {
+                    drinkCoordinates.Add((o, i));
+                }
+                else if (ings[i].type.HasFlag(IngredientFlags.Comida))
+                {
+                    foodCoordinates.Add((o, i));
+                }
+            }
+        }
+        if (drinkCoordinates.Count > 0 && foodCoordinates.Count > 0)
+        {
+            var targetDrink = drinkCoordinates[Random.Range(0, drinkCoordinates.Count)];
+            var targetFood = foodCoordinates[Random.Range(0, foodCoordinates.Count)];
+
+            List<Ingredient> drinkOrderIngredients = modifiedTab.pedidos[targetDrink.orderIdx].ingredientes;
+            List<Ingredient> foodOrderIngredients = modifiedTab.pedidos[targetFood.orderIdx].ingredientes;
+
+            Ingredient temp = drinkOrderIngredients[targetDrink.ingIdx];
+            drinkOrderIngredients[targetDrink.ingIdx] = foodOrderIngredients[targetFood.ingIdx];
+            foodOrderIngredients[targetFood.ingIdx] = temp;
+
+            Debug.Log($"[MODIFIER] Sucesso! Trocado ingrediente entre o Pedido {targetDrink.orderIdx} e o Pedido {targetFood.orderIdx}");
+        }
+        else
+        {
+            Debug.LogWarning("[MODIFIER] A comanda não continha ambos os tipos (Bebida e Comida) para realizar a troca.");
         }
 
-        Order modifiedOrder = new Order(originalOrder.quantity, ingredients);
-        return modifiedOrder;
+        return modifiedTab;
     }
 }

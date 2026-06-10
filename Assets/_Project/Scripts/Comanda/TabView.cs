@@ -13,6 +13,7 @@ public class TabView : MonoBehaviour
     {
         textTab.text = "";
         orderFormatter = GetComponent<OrderFormatter>();
+
     }
     public void OnEnable()
     {
@@ -28,12 +29,21 @@ public class TabView : MonoBehaviour
     private void OpenTab(Tab tabData)
     {
         if (isOpen) return;
-        containerTab.SetActive(true);
-        foreach (var pedido in tabData.pedidos)
+        if (tabData.isFake) // temporario
         {
-            string formatted = orderFormatter.FormatPedido(pedido);
+            typeText.text = "Fake Tab";
+        }
+        else
+        {
+            typeText.text = "Real Tab";
+        }
+        containerTab.SetActive(true);
+        for (int i = 0; i < tabData.pedidos.Count; i++)
+        {
+            string formatted = orderFormatter.FormatPedido(tabData.pedidos[i], i);
             textTab.text += formatted + "\n";
         }
+
         isOpen = true;
     }
     public void CloseTab()

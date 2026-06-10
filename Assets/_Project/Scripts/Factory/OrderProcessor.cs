@@ -3,47 +3,24 @@ using UnityEngine;
 
 public class OrderProcessor : MonoBehaviour
 {
-    private List<IOrderModifier> activeModifiers = new List<IOrderModifier>();
+    private List<IOrderModifier> modifiers = new List<IOrderModifier>();
 
     public void AddModifier(IOrderModifier modifier)
     {
-        if (!activeModifiers.Contains(modifier))
-        {
-            activeModifiers.Add(modifier);
-        }
+        if (!modifiers.Contains(modifier))
+            modifiers.Add(modifier);
     }
 
     public Tab ProcessTab(Tab originalTab)
     {
-        Tab fakeTab = ScriptableObject.CreateInstance<Tab>();
-        fakeTab.name = "fakeTab";
-        fakeTab.pedidos = new List<Order>();
+        Tab processedTab = originalTab;
 
-        if (originalTab.pedidos == null)
+        foreach (IOrderModifier modifier in modifiers)
         {
-            return fakeTab;
+            processedTab = modifier.Modify(processedTab);
         }
-
-        foreach (var order in originalTab.pedidos)
-        {
-            Order fakeOrder = new Order(order.quantity, new List<Ingredient>(order.ingredientes));
-
-            foreach (var mod in activeModifiers)
-            {
-                fakeOrder = mod.Modify(fakeOrder);
-            }
-            fakeTab.pedidos.Add(fakeOrder);
-        }
-        return fakeTab;
-    }
-
-    public Order Process(Order order)
-    {
-        Order finalOrder = order;
-        foreach (var mod in activeModifiers)
-        {
-            finalOrder = mod.Modify(finalOrder);
-        }
-        return finalOrder;
+        processedTab.name = "fakeTab";
+        processedTab.isFake = true;
+        return processedTab;
     }
 }

@@ -1270,7 +1270,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1391214503
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1642,7 +1642,7 @@ MonoBehaviour:
   isOpen: 0
   containerTab: {fileID: 681880311}
   textTab: {fileID: 643918793}
-  typeText: {fileID: 0}
+  typeText: {fileID: 1391214504}
 --- !u!114 &1629984095
 MonoBehaviour:
   m_ObjectHideFlags: 0
