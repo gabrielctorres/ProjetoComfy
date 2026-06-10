@@ -23,20 +23,15 @@ public class LinkHandlerForTMPText : MonoBehaviour, IPointerClickHandler
             cameraToUse = _canvasToCheck.worldCamera;
     }
 
-
     public void OnPointerClick(PointerEventData eventData)
     {
-        Vector3 mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0);
-
-        var linkTaggedText = TMP_TextUtilities.FindIntersectingLink(_tmpTextBox, mousePosition, cameraToUse);
+        int linkTaggedText = TMP_TextUtilities.FindIntersectingLink(_tmpTextBox, eventData.position, cameraToUse);
 
         if (linkTaggedText != -1)
         {
             TMP_LinkInfo linkInfo = _tmpTextBox.textInfo.linkInfo[linkTaggedText];
-
             OnClickedOnLinkEvent?.Invoke(linkInfo.GetLinkID(), linkInfo.GetLinkText());
         }
     }
-
-
 }
+

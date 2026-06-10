@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Limao
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Limao
-  type: 6
+  type: 22

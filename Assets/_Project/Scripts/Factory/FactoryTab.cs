@@ -6,22 +6,13 @@ public class FactoryTab : MonoBehaviour
     [Header("Banco de Dados Único")]
     public List<Ingredient> allIngredients = new List<Ingredient>();
 
-    [Header("Configurações de Spawn")]
-    public GameObject tabPrefab;
-    public Transform spawnPoint;
-    int count = 0;
-
     [Header("Configurações da Comanda")]
     public int minOrdersPerTab = 1;
     public int maxOrdersPerTab = 4;
     public int maxQuantityPerOrder = 3;
+    int count = 0;
 
-    public void Start()
-    {
-        for (int i = 0; i < 5; i++) CreateTab();
-    }
-
-    public void CreateTab()
+    public Tab CreateTab()
     {
         count++;
         Tab newTab = ScriptableObject.CreateInstance<Tab>();
@@ -42,11 +33,35 @@ public class FactoryTab : MonoBehaviour
             }
         }
 
-        if (newTab.pedidos.Count == 0) return;
+        // Alternativa caso a tab esteja vazia
+        if (newTab.pedidos.Count == 0)
+        {
+            Debug.Log("FactoryTab: Tab vazia detectada. Criando pedido padrão.");
+            newTab.pedidos.Add(CreateDefaultOrder());
+        }
 
-        GameObject tabInstance = Instantiate(tabPrefab, spawnPoint.position, Quaternion.identity, spawnPoint);
-        tabInstance.GetComponent<TabInteract>().tabData = newTab;
-        tabInstance.GetComponent<TabInteract>().count = count;
+        return newTab;
+    }
+
+    private Order CreateDefaultOrder()
+    {
+        // Pega o primeiro ingrediente disponível de cada tipo para garantir um pedido válido
+        Ingredient principal = allIngredients.Find(i => i != null && i.type.HasFlag(IngredientFlags.Principal));
+        Ingredient secundario = allIngredients.Find(i => i != null && i.type.HasFlag(IngredientFlags.Secundario));
+        Ingredient acompanhante = allIngredients.Find(i => i != null && i.type.HasFlag(IngredientFlags.Acompanhamento));
+
+        List<Ingredient> ingredients = new List<Ingredient>();
+        if (principal != null) ingredients.Add(principal);
+        if (secundario != null) ingredients.Add(secundario);
+        if (acompanhante != null) ingredients.Add(acompanhante);
+
+        // Se ainda não achou nada, pega o primeiro da lista geral
+        if (ingredients.Count == 0 && allIngredients.Count > 0)
+        {
+            ingredients.Add(allIngredients[0]);
+        }
+
+        return new Order(1, ingredients);
     }
 
     private Order GenerateSingleOrder(IngredientFlags targetType, int quantity)
@@ -76,14 +91,11 @@ public class FactoryTab : MonoBehaviour
         if (ingredient == null) return false;
         if (!ingredient.type.HasFlag(targetType)) return false;
 
-        // Se o prato já começou a ser montado, precisamos checar a compatibilidade vegana
         if (currentList.Count > 0)
         {
-            // Descobre o estado atual do prato baseado no primeiro ingrediente colocado
             bool isOrderVegano = currentList[0].type.HasFlag(IngredientFlags.Vegano);
             bool isNewIngredientVegano = ingredient.type.HasFlag(IngredientFlags.Vegano);
 
-            // Se um for vegano e o outro não for, eles não batem. Bloqueia!
             if (isOrderVegano != isNewIngredientVegano) return false;
         }
 

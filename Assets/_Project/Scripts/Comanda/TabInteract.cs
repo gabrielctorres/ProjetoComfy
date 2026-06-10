@@ -4,6 +4,9 @@ using TMPro;
 public class TabInteract : MonoBehaviour, IInteractable
 {
     public Tab tabData;
+    public Tab originalData;
+
+
     public TextMeshProUGUI tabText;
     public int count;
     public static event Action<Tab> OnTabOpen;
@@ -14,7 +17,6 @@ public class TabInteract : MonoBehaviour, IInteractable
     }
     public void Interact()
     {
-        // Disparar um evento para abrir a tab
         OnTabOpen?.Invoke(this.tabData);
     }
 }

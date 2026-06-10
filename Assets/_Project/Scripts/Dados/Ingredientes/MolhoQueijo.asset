@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: MolhoQueijo
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Molho Queijo
-  type: 33
+  type: 32

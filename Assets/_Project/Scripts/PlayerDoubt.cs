@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 public class PlayerDoubt : MonoBehaviour
 {
@@ -27,23 +28,24 @@ public class PlayerDoubt : MonoBehaviour
         if (doubts.Count < douptMax)
         {
             doubts.Add(linkText);
-            ApplyRich(id, linkText);
-        }
-        else
-        {
-            Debug.Log("Doubt limit reached. Cannot add more doubts.");
+            ApplyRichStyle(id, "mark=#eb3434");
         }
     }
 
-    public void ApplyRich(string linkID, string linkText)
+    public void ApplyRichStyle(string linkID, string innerStyle)
     {
-        string texOriginal = tabText.text;
-        string formatedOrigin = $"<link={linkID}><u>{linkText}</u></link>";
-        string textModified = FormatterTab.Mark(linkID, linkText);
+        string textoOriginal = tabText.text;
 
-        if (texOriginal.Contains(formatedOrigin))
+        string pattern = @"<link=""" + linkID + @""">(.*?)</link>";
+
+        if (Regex.IsMatch(textoOriginal, pattern))
         {
-            tabText.text = texOriginal.Replace(formatedOrigin, textModified);
+            tabText.text = Regex.Replace(textoOriginal, pattern, match =>
+            {
+                string textoInternoReal = match.Groups[1].Value;
+
+                return $"<link=\"{linkID}\"><{innerStyle}>{textoInternoReal}</{innerStyle}></link>";
+            });
         }
     }
 }

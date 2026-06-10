@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: CremeDeAlho
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: CremeAlho
-  type: 37
+  type: 36

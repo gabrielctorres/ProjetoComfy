@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: MolhoVerde
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Molho Verde
-  type: 33
+  type: 32
