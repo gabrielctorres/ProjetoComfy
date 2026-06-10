@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e8ef455c02bc2744b18418ea5d42d3d, type: 3}
-  m_Name: BatataFrita
-  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
-  ingredientName: Batata Frita
-  type: 21
+  m_Script: {fileID: 11500000, guid: cfe7fed857e95a54c85b91f547f1c5e2, type: 3}
+  m_Name: Orange
+  m_EditorClassIdentifier: Assembly-CSharp::Food
+  ingredientName: Lemon
+  orderName: 
+  type: -1
+  isVegan: 0
+  category: 2

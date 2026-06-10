@@ -40,7 +40,7 @@ public class TabView : MonoBehaviour
         containerTab.SetActive(true);
         for (int i = 0; i < tabData.pedidos.Count; i++)
         {
-            string formatted = orderFormatter.FormatPedido(tabData.pedidos[i], i);
+            string formatted = orderFormatter.FormatOrder(tabData.pedidos[i]);
             textTab.text += formatted + "\n";
         }
 

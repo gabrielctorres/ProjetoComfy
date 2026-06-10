@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     public void Start()
     {
         processor.AddModifier(swapModifier);
-        for (int i = 0; i < 4; i++) GenerateNewOrder();
+        for (int i = 0; i < 6; i++) GenerateNewOrder();
     }
 
 

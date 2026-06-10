@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e8ef455c02bc2744b18418ea5d42d3d, type: 3}
+  m_Script: {fileID: 11500000, guid: 744a06b0daf2e7a4ead918c73591d6ad, type: 3}
   m_Name: Vodka
-  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
+  m_EditorClassIdentifier: Assembly-CSharp::Beverage
   ingredientName: Vodka
-  type: 10
+  type: 1
+  isVegan: 0
+  category: 1
+  strength: 0

@@ -1558,18 +1558,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 401d667b36eefc340957ab75dbdd9420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FactoryTab
-  allIngredients:
-  - {fileID: 11400000, guid: ca46b4ec883dad147ba5cc74622be784, type: 2}
-  - {fileID: 11400000, guid: 3334e7e3c694f9941a4640c52472c610, type: 2}
-  - {fileID: 11400000, guid: 68b19aaf2aaf4bd4c8ec6d11d41017a8, type: 2}
-  - {fileID: 11400000, guid: 7ffab56c33adccd42a358fc25d950521, type: 2}
+  foodIngredients:
   - {fileID: 11400000, guid: 65f70ede9c818164cb1cef4ae4d52d34, type: 2}
-  - {fileID: 11400000, guid: 4e4c54ef8b05d32468a2c71c95e3c144, type: 2}
-  - {fileID: 11400000, guid: 0b21242bb8e6fb04aa370c2f4d17c0c4, type: 2}
-  - {fileID: 11400000, guid: 96dfb8c79b794464db64e9e294f0b667, type: 2}
-  - {fileID: 11400000, guid: 87787927c2af59f42b37a17e2f3dda04, type: 2}
-  - {fileID: 11400000, guid: 2b357cd170ff6174baa3110cc40c3023, type: 2}
-  - {fileID: 11400000, guid: f104e93d9ebfecf4598b98a3b21ec5bc, type: 2}
+  - {fileID: 11400000, guid: 6ae3b19788c00764d8b79965f6ca365e, type: 2}
+  - {fileID: 11400000, guid: da71f4be4023e34409e946d0bfc2b647, type: 2}
+  beverageIngredients:
+  - {fileID: 11400000, guid: aa2a22bac65c1894b923c2888df9cfaa, type: 2}
+  - {fileID: 11400000, guid: f760d0c897cbe8642ac0a5024636a03b, type: 2}
+  - {fileID: 11400000, guid: 52232f8879a89194ebc87ea611ae9336, type: 2}
+  - {fileID: 11400000, guid: 0b4a70ac9d0cf054c96cf057c27bb98f, type: 2}
   minOrdersPerTab: 1
   maxOrdersPerTab: 4
   maxQuantityPerOrder: 3

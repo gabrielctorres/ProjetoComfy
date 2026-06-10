@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e8ef455c02bc2744b18418ea5d42d3d, type: 3}
-  m_Name: Camarao
-  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
-  ingredientName: Camarao
-  type: 9
+  m_Script: {fileID: 11500000, guid: cfe7fed857e95a54c85b91f547f1c5e2, type: 3}
+  m_Name: Fries
+  m_EditorClassIdentifier: Assembly-CSharp::Food
+  ingredientName: Fries
+  type: -1
+  isVegano: 0
