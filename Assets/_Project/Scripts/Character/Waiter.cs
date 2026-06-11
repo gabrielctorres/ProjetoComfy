@@ -26,7 +26,7 @@ public class Waiter : MonoBehaviour
         TabInteract interact = currentTabInstance.GetComponent<TabInteract>();
         if (interact != null)
         {
-            interact.tabData = originalTab;
+            interact.tabData = fakeTab;
         }
     }
     public void DestroyTab()

@@ -22,11 +22,7 @@ public class DayManager : MonoBehaviour
     }
     public void StartNewDay()
     {
-        if (CurrentDay > totalDays)
-        {
-            Debug.Log("Todos os dias foram concluídos.");
-            return;
-        }
+        if (CurrentDay > totalDays) return;
         CurrentTimeInDay = 0f;
         IsDayActive = true;
 
@@ -50,7 +46,6 @@ public class DayManager : MonoBehaviour
         {
             IsDayActive = false;
             OnGameOver?.Invoke();
-            Debug.Log("Game Over: Os clientes ficaram insatisfeitos demais!");
         }
     }
 }

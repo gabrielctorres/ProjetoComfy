@@ -9,27 +9,35 @@ public class TabView : MonoBehaviour
     public TextMeshProUGUI typeText;
     private OrderFormatter orderFormatter;
 
+    private Tab currentOpenTabData;
+
     void Start()
     {
         textTab.text = "";
         orderFormatter = GetComponent<OrderFormatter>();
-
     }
+
     public void OnEnable()
     {
         TabInteract.OnTabOpen += OpenTab;
 
+        WaiterSpawner.OnTabRefreshed += RefreshTabVisuals;
     }
 
     public void OnDisable()
     {
         TabInteract.OnTabOpen -= OpenTab;
+
+        WaiterSpawner.OnTabRefreshed -= RefreshTabVisuals;
     }
 
     private void OpenTab(Tab tabData)
     {
         if (isOpen) return;
-        if (tabData.isFake) // temporario
+
+        currentOpenTabData = tabData;
+
+        if (tabData.isFake)
         {
             typeText.text = "Fake Tab";
         }
@@ -37,19 +45,31 @@ public class TabView : MonoBehaviour
         {
             typeText.text = "Real Tab";
         }
+
         containerTab.SetActive(true);
-        for (int i = 0; i < tabData.pedidos.Count; i++)
+        isOpen = true;
+
+        RefreshTabVisuals();
+    }
+
+    public void RefreshTabVisuals()
+    {
+        if (currentOpenTabData == null || !isOpen) return;
+
+        textTab.text = "";
+
+        for (int i = 0; i < currentOpenTabData.pedidos.Count; i++)
         {
-            string formatted = orderFormatter.FormatOrder(tabData.pedidos[i]);
+            string formatted = orderFormatter.FormatOrder(currentOpenTabData.pedidos[i], i);
             textTab.text += formatted + "\n";
         }
-
-        isOpen = true;
     }
+
     public void CloseTab()
     {
         containerTab.SetActive(false);
         textTab.text = "";
+        currentOpenTabData = null;
         isOpen = false;
     }
 }

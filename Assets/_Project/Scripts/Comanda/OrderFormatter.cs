@@ -4,12 +4,23 @@ using UnityEngine;
 
 public class OrderFormatter : MonoBehaviour
 {
-    public string FormatOrder(Order order)
+    // Passamos o índice do pedido (orderIdx) para gerar links exclusivos por linha
+    public string FormatOrder(Order order, int orderIdx)
     {
         StringBuilder sb = new StringBuilder();
-        sb.Append($"{order.quantity}x ");
 
-        if (order.ingredientes[0] is Food f)
+        if (order.ingredientes == null || order.ingredientes.Count == 0)
+            return sb.ToString();
+
+        string qtyLinkId = $"qty_{orderIdx}";
+        sb.Append($"<link=\"{qtyLinkId}\">{order.quantity}x</link> ");
+
+        string ingLinkId = $"ing_{orderIdx}";
+        sb.Append($"<link=\"{ingLinkId}\">");
+
+        Ingredient baseIng = order.ingredientes[0];
+
+        if (baseIng is Food f)
         {
             if (f.category == FoodCategory.Sanduiche)
             {
@@ -26,12 +37,12 @@ public class OrderFormatter : MonoBehaviour
                 sb.Append(f.ingredientName);
             }
         }
-        else if (order.ingredientes[0] is Beverage b)
+        else if (baseIng is Beverage b)
         {
             if (b.category == BeverageCategory.Juice)
             {
                 sb.Append("Suco com Agua");
-                foreach (var ing in order.ingredientes) sb.Append(", " + ing.ingredientName);
+                foreach (Ingredient ing in order.ingredientes) sb.Append(", " + ing.ingredientName);
             }
             else if (b.category == BeverageCategory.Drink)
             {
@@ -49,8 +60,10 @@ public class OrderFormatter : MonoBehaviour
         }
         else
         {
-            sb.Append(order.ingredientes[0].ingredientName);
+            sb.Append(baseIng.ingredientName);
         }
+
+        sb.Append("</link>");
 
         return sb.ToString();
     }
