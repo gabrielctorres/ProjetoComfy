@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Watermelon
   m_EditorClassIdentifier: Assembly-CSharp::Food
   ingredientName: Watermelon
-  type: -1
+  type: 2
   isVegan: 0
   category: 2

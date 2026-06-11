@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class OrderProcessor : MonoBehaviour
 {
     private List<IOrderModifier> modifiers = new List<IOrderModifier>();
+    public static event Action OnOrderFinished;
 
     public void AddModifier(IOrderModifier modifier)
     {
@@ -22,5 +24,11 @@ public class OrderProcessor : MonoBehaviour
         processedTab.name = "fakeTab";
         processedTab.isFake = true;
         return processedTab;
+    }
+
+    public void ConcluirPedido()
+    {
+        Debug.Log("Pedido finalizado com sucesso");
+        OnOrderFinished?.Invoke();
     }
 }

@@ -1,47 +1,25 @@
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Configurações de Spawn")]
+    public static GameManager Instance { get; private set; }
+
     public GameObject tabPrefab;
-    public Transform spawnPoint;
-    int count = 0;
+    public Transform tabPoint;
 
-    [SerializeField] private FactoryTab factory;
-    [SerializeField] private OrderProcessor processor;
-    [SerializeField] private TabView view;
-
-    private SwapDrinkFoodModifier swapModifier = new SwapDrinkFoodModifier();
-
-    public void Start()
+    private void Awake()
     {
-        processor.AddModifier(swapModifier);
-        for (int i = 0; i < 6; i++) GenerateNewOrder();
-    }
-
-
-    public void GenerateNewOrder()
-    {
-        Tab originalTab = factory.CreateTab();
-        float random = Random.Range(0f, 1f);
-        if (random > 0.5f)
+        if (Instance != null && Instance != this)
         {
-            Tab fakeTab = processor.ProcessTab(originalTab);
-            SpawnTab(fakeTab, originalTab);
+            Destroy(gameObject);
         }
         else
         {
-            SpawnTab(originalTab, originalTab);
+            Instance = this;
+            DontDestroyOnLoad(this);
         }
     }
 
-    public void SpawnTab(Tab fakeTab, Tab originalTab)
-    {
-        count++;
-        GameObject tabInstance = Instantiate(tabPrefab, spawnPoint.position, Quaternion.identity, spawnPoint);
-        TabInteract interact = tabInstance.GetComponent<TabInteract>();
-        interact.tabData = fakeTab;
-        interact.originalData = originalTab;
-        interact.count = count;
-    }
+
 }
