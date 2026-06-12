@@ -20,21 +20,22 @@ public class WaiterSpawner : MonoBehaviour
     private bool isCurrentOrderFinished = false;
 
     private Waiter currentWaiter;
-
+    private OrderDebuff currentDebuffThisDay;
 
     public static event Action<Waiter> OnWaiterSpawned;
 
     private void OnEnable()
     {
         DayManager.OnDayStarted += HandleDayStarted;
+        DayManager.OnDebuffChanged += HandleDebuffChanged;
         OrderProcessor.OnOrderFinished += HandleOrderFinished;
-
         PlayerDoubt.OnDoubtSubmitted += EvaluatePlayerDoubts;
     }
 
     private void OnDisable()
     {
         DayManager.OnDayStarted -= HandleDayStarted;
+        DayManager.OnDebuffChanged -= HandleDebuffChanged;
         OrderProcessor.OnOrderFinished -= HandleOrderFinished;
         PlayerDoubt.OnDoubtSubmitted -= EvaluatePlayerDoubts;
     }
@@ -42,6 +43,11 @@ public class WaiterSpawner : MonoBehaviour
     private void HandleDayStarted(int currentDay)
     {
         StartCoroutine(SpawnWaitersRoutine());
+    }
+
+    private void HandleDebuffChanged(OrderDebuff newDebuff)
+    {
+        currentDebuffThisDay = newDebuff;
     }
 
     private void HandleOrderFinished()
@@ -70,15 +76,22 @@ public class WaiterSpawner : MonoBehaviour
 
     public void CreatWaiter()
     {
-        if (currentWaiter != null)
+        if (currentWaiter != null) Destroy(currentWaiter.gameObject);
+
+        SpawnRules rulesToApply = factoryTab.DefaultRules;
+
+        if (currentDebuffThisDay != null)
         {
-            Destroy(currentWaiter.gameObject);
+            rulesToApply = currentDebuffThisDay.ModifySpawnRules(rulesToApply);
         }
 
-        Tab newTab = factoryTab.CreateTab();
+        Tab newTab = factoryTab.CreateTab(rulesToApply);
+
         currentWaiter = Instantiate(waiterPrefab, spawnPoint.position, spawnPoint.rotation).GetComponent<Waiter>();
         currentWaiter.originalTab = newTab;
-        currentWaiter.fakeTab = ApplyModifierTab(newTab);
+        currentWaiter.fakeTab = orderProcessor.ProcessTab(newTab);
+
+
         SpriteRenderer spriteRenderer = currentWaiter.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
@@ -87,12 +100,7 @@ public class WaiterSpawner : MonoBehaviour
 
         OnWaiterSpawned?.Invoke(currentWaiter);
     }
-    public Tab ApplyModifierTab(Tab originalTab)
-    {
-        Tab tabAux = originalTab;
-        orderProcessor.AddModifier(new ChangeQuantityModifier());
-        return orderProcessor.ProcessTab(tabAux);
-    }
+
 
     private void EvaluatePlayerDoubts(List<string> submittedDoubts)
     {
@@ -125,6 +133,7 @@ public class WaiterSpawner : MonoBehaviour
                 playerWasRight = true;
             }
         }
+
         if (playerWasRight)
         {
             OnTabRefreshed?.Invoke();

@@ -2,64 +2,98 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class SwapDrinkFoodModifier : IOrderModifier
+public class SwapDrinkFoodModifier : OrderDebuff
 {
-    public Tab Modify(Tab originalTab)
+    public SwapDrinkFoodModifier()
     {
-        Tab modifiedTab = ScriptableObject.CreateInstance<Tab>();
-        modifiedTab.pedidos = new List<Order>();
+        Name = "Senhorinha";
+    }
+
+    public override SpawnRules ModifySpawnRules(SpawnRules defaultRules)
+    {
+        return new SpawnRules(
+            minOrders: Mathf.Max(2, defaultRules.maxOrders - 1),
+            maxOrders: defaultRules.maxOrders,
+            maxQuantity: defaultRules.maxQuantity,
+            veganChance: 0.5f,
+            foodOnlyChance: 0.1f,
+            drinkOnlyChance: 0.1f,
+            mixedChance: 0.8f);
+    }
+
+    public override Tab ApplyDebuffToTab(Tab originalTab, List<Food> foodIngredients, List<Beverage> beverageIngredients)
+    {
+        Tab fakeTab = ScriptableObject.CreateInstance<Tab>();
+        fakeTab.pedidos = new List<Order>();
 
         foreach (Order order in originalTab.pedidos)
         {
-            modifiedTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
+            fakeTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
         }
 
-        List<(int orderIdx, int ingIdex, bool isVegan)> principalIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
-        List<(int orderIdx, int ingIdx, bool isVegan)> acompanhamentoIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
-
-        for (int o = 0; o < modifiedTab.pedidos.Count; o++)
+        if (fakeTab.pedidos.Count < 2)
         {
-            List<Ingredient> ings = modifiedTab.pedidos[o].ingredientes;
-            for (int i = 0; i < ings.Count; i++)
+            fakeTab.name = "Comanda Bagunçada (Fake)";
+            fakeTab.isFake = true;
+            return fakeTab;
+        }
+
+        List<Ingredient> todosPrincipais = new List<Ingredient>();
+        List<Ingredient> todosAcompanhamentos = new List<Ingredient>();
+
+        foreach (Order order in fakeTab.pedidos)
+        {
+            foreach (Ingredient ing in order.ingredientes)
             {
-                if (ings[i].type.HasFlag(IngredientFlags.Principal))
-                    principalIngredients.Add((o, i, ings[i].isVegan));
-                else if (ings[i].type.HasFlag(IngredientFlags.Acompanhamento))
-                    acompanhamentoIngredients.Add((o, i, ings[i].isVegan));
+                if (ing.type.HasFlag(IngredientFlags.Principal))
+                    todosPrincipais.Add(ing);
+                else if (ing.type.HasFlag(IngredientFlags.Acompanhamento))
+                    todosAcompanhamentos.Add(ing);
             }
         }
 
-        TrySwap(modifiedTab, principalIngredients);
-        TrySwap(modifiedTab, acompanhamentoIngredients);
+        RotacionarLista(todosPrincipais);
+        RotacionarLista(todosAcompanhamentos);
 
-        return modifiedTab;
+        int indexPrincipal = 0;
+        int indexAcompanhamento = 0;
+
+        foreach (Order order in fakeTab.pedidos)
+        {
+            List<Ingredient> novosIngredientes = new List<Ingredient>();
+
+            foreach (Ingredient ing in order.ingredientes)
+            {
+                if (ing.type.HasFlag(IngredientFlags.Principal) && todosPrincipais.Count > 0)
+                {
+                    novosIngredientes.Add(todosPrincipais[indexPrincipal]);
+                    indexPrincipal = (indexPrincipal + 1) % todosPrincipais.Count;
+                }
+                else if (ing.type.HasFlag(IngredientFlags.Acompanhamento) && todosAcompanhamentos.Count > 0)
+                {
+                    novosIngredientes.Add(todosAcompanhamentos[indexAcompanhamento]);
+                    indexAcompanhamento = (indexAcompanhamento + 1) % todosAcompanhamentos.Count;
+                }
+                else
+                {
+                    novosIngredientes.Add(ing);
+                }
+            }
+
+            order.ingredientes = novosIngredientes;
+        }
+
+        fakeTab.name = "Comanda Fake";
+        fakeTab.isFake = true;
+        return fakeTab;
     }
 
-    private void TrySwap(Tab tab, List<(int orderIdx, int ingIdx, bool isVegan)> candidates)
+    private void RotacionarLista(List<Ingredient> lista)
     {
-        if (candidates.Count < 2) return;
+        if (lista.Count < 2) return;
 
-        List<(int orderIdx, int ingIdx, bool isVegan)> veganCandidates = candidates.Where(c => c.isVegan).ToList();
-        List<(int orderIdx, int ingIdx, bool isVegan)> meatCandidates = candidates.Where(c => !c.isVegan).ToList();
-
-        PerformSwap(tab, veganCandidates);
-        PerformSwap(tab, meatCandidates);
-    }
-
-    private void PerformSwap(Tab tab, List<(int orderIdx, int ingIdx, bool isVegan)> list)
-    {
-        if (list.Count < 2) return;
-
-        (int orderIdx, int ingIdx, bool isVegan) first = list[Random.Range(0, list.Count)];
-        (int orderIdx, int ingIdx, bool isVegan) second = list[Random.Range(0, list.Count)];
-
-        if (first.orderIdx == second.orderIdx && first.ingIdx == second.ingIdx) return;
-
-        List<Ingredient> ingsFirst = tab.pedidos[first.orderIdx].ingredientes;
-        List<Ingredient> ingsSecond = tab.pedidos[second.orderIdx].ingredientes;
-
-        Ingredient temp = ingsFirst[first.ingIdx];
-        ingsFirst[first.ingIdx] = ingsSecond[second.ingIdx];
-        ingsSecond[second.ingIdx] = temp;
+        Ingredient primeiro = lista[0];
+        lista.RemoveAt(0);
+        lista.Add(primeiro);
     }
 }

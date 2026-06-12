@@ -5,12 +5,13 @@ public class DayManager : MonoBehaviour
 {
     [Header("Configurações do Dia")]
     [SerializeField] private int totalDays = 5;
-    [SerializeField] private float dayDurationInSeconds = 120f;
-
     public int CurrentDay { get; private set; } = 1;
     public float CurrentTimeInDay { get; private set; }
     public float CustomerSatisfaction { get; private set; } = 100f;
     public bool IsDayActive { get; private set; }
+
+    public static event Action<OrderDebuff> OnDebuffChanged;
+
     public static event Action<int> OnDayStarted;
     public static event Action OnDayEnded;
     public static event Action<float> OnSatisfactionChanged;
@@ -20,24 +21,42 @@ public class DayManager : MonoBehaviour
     {
         StartNewDay();
     }
+
     public void StartNewDay()
     {
         if (CurrentDay > totalDays) return;
         CurrentTimeInDay = 0f;
         IsDayActive = true;
 
+        OrderDebuff activeDebuff = ChooseDebuffForCurrentDay();
+
         Debug.Log($"Dia {CurrentDay} começou!");
+
         OnDayStarted?.Invoke(CurrentDay);
+        OnDebuffChanged?.Invoke(activeDebuff);
     }
+
+    private OrderDebuff ChooseDebuffForCurrentDay()
+    {
+        int random = 1;
+        switch (random)
+        {
+            case 0: return new ChangeQuantityModifier();
+            default: return new SwapDrinkFoodModifier();
+        }
+    }
+
     public void EndCurrentDay()
     {
         IsDayActive = false;
-        Debug.Log($"Dia {CurrentDay} terminou!");
+        OnDebuffChanged?.Invoke(null);
 
+        Debug.Log($"Dia {CurrentDay} terminou!");
         OnDayEnded?.Invoke();
         CurrentDay++;
     }
-    public void ModifySatisfaction(float amount) // Talvez alterar isso
+
+    public void ModifySatisfaction(float amount)
     {
         CustomerSatisfaction = Mathf.Clamp(CustomerSatisfaction + amount, 0f, 100f);
         OnSatisfactionChanged?.Invoke(CustomerSatisfaction);
