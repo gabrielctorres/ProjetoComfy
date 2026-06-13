@@ -1,4 +1,4 @@
-using System; // Necessário para o Enum.GetValues
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,164 +8,187 @@ public class FactoryTab : MonoBehaviour
     public List<Food> foodIngredients;
     public List<Beverage> beverageIngredients;
 
-    private int minOrders = 1;
-    private int maxOrders = 4;
-    private int maxQuantity = 3;
+    [Header("Configurações Padrão de Spawn")]
+    [SerializeField] private int minOrders = 1;
+    [SerializeField] private int maxOrders = 4;
+    [SerializeField] private int maxQuantity = 3;
 
     private SpawnRules defaultRules;
+    public SpawnRules DefaultRules => defaultRules;
 
     private void Awake()
     {
         defaultRules = new SpawnRules(minOrders, maxOrders, maxQuantity);
     }
 
-    public SpawnRules DefaultRules => defaultRules;
-
     public Tab CreateTab(SpawnRules customRules = null)
     {
-        SpawnRules rules = customRules ?? defaultRules;
-
-        Tab tab = ScriptableObject.CreateInstance<Tab>();
+        var rules = customRules ?? defaultRules;
+        var tab = ScriptableObject.CreateInstance<Tab>();
         tab.pedidos = new List<Order>();
 
-        int orderCount = UnityEngine.Random.Range(rules.minOrders, rules.maxOrders + 1);
-        for (int i = 0; i < orderCount; i++)
+        int total = UnityEngine.Random.Range(rules.minOrders, rules.maxOrders + 1);
+        float roll = UnityEngine.Random.value;
+
+        for (int i = 0; i < total; i++)
         {
-            tab.pedidos.Add(GenerateSingleOrder(rules));
+            bool forceFood = roll < rules.foodOnlyChance || (roll >= rules.foodOnlyChance + rules.drinkOnlyChance && UnityEngine.Random.value > 0.5f);
+            bool forceDrink = !forceFood;
+
+            tab.pedidos.Add(GenerateSingleOrder(rules, forceFood, forceDrink));
         }
 
         return tab;
     }
 
-    private Order GenerateSingleOrder(SpawnRules rules)
+    private Order GenerateSingleOrder(SpawnRules rules, bool forceFood, bool forceDrink)
     {
-        Order order;
-        int maxAttempts = 10;
-        int attempts = 0;
-
-        do
+        for (int attempt = 0; attempt < 10; attempt++)
         {
-            order = GenerateOrderAttempt(rules);
-            attempts++;
-        } while (!IsValid(order) && attempts < maxAttempts);
-
-        return order;
+            var order = GenerateOrderAttempt(rules, forceFood, forceDrink);
+            if (IsValid(order)) return order;
+        }
+        return CreateDefaultOrder(UnityEngine.Random.Range(1, rules.maxQuantity + 1));
     }
 
-    private Order GenerateOrderAttempt(SpawnRules rules)
+    private Order GenerateOrderAttempt(SpawnRules rules, bool forceFood, bool forceDrink)
     {
         bool isVegan = UnityEngine.Random.value < rules.veganChance;
-        List<Ingredient> selectedIngredients = new List<Ingredient>();
+        var ingredients = new List<Ingredient>();
 
-        float roll = UnityEngine.Random.value;
+        if (forceFood) BuildFoodLine(ingredients, isVegan);
+        else if (forceDrink) BuildDrinkLine(ingredients, isVegan);
 
-        if (roll < rules.foodOnlyChance)
-        {
-            AddFoodToIngredients(selectedIngredients, isVegan);
-        }
-        else if (roll < rules.foodOnlyChance + rules.drinkOnlyChance)
-        {
-            AddDrinkToIngredients(selectedIngredients, isVegan);
-        }
-        else
-        {
-            AddFoodToIngredients(selectedIngredients, isVegan);
-            AddDrinkToIngredients(selectedIngredients, isVegan);
-        }
-
-        int quantity = UnityEngine.Random.Range(1, rules.maxQuantity + 1);
-        return selectedIngredients.Count > 0 ? new Order(quantity, selectedIngredients) : CreateDefaultOrder(quantity);
+        int qty = UnityEngine.Random.Range(1, rules.maxQuantity + 1);
+        return ingredients.Count > 0 ? new Order(qty, ingredients) : CreateDefaultOrder(qty);
     }
 
-    private void AddFoodToIngredients(List<Ingredient> list, bool isVegan)
+    private void BuildFoodLine(List<Ingredient> list, bool isVegan)
     {
-        var categories = Enum.GetValues(typeof(FoodCategory));
-        FoodCategory cat = (FoodCategory)categories.GetValue(UnityEngine.Random.Range(0, categories.Length));
+        var categories = GetFoodCategoriesExceptFruta();
+        if (categories.Count == 0) return;
 
-        List<Food> principalOptions = foodIngredients.Where(f => f.category == cat && f.type.HasFlag(IngredientFlags.Principal) && f.isVegan == isVegan).ToList();
-        List<Food> acompanhamentoOptions = foodIngredients.Where(f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.isVegan == isVegan && f.category != FoodCategory.Fruta).ToList();
+        var cat = categories[UnityEngine.Random.Range(0, categories.Count)];
 
+        var principal = GetFoodWithVeganFallback(
+            f => f.category == cat && f.type.HasFlag(IngredientFlags.Principal), isVegan);
 
-        if (principalOptions.Count == 0 && !isVegan)
-        {
-            principalOptions = foodIngredients.Where(f => f.category == cat && f.type.HasFlag(IngredientFlags.Principal)).ToList();
-        }
-        if (acompanhamentoOptions.Count == 0 && !isVegan)
-        {
-            acompanhamentoOptions = foodIngredients.Where(f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta).ToList();
-        }
+        var acompanhamento = GetFoodWithVeganFallback(
+            f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta, isVegan);
 
-        if (principalOptions.Count > 0) list.Add(principalOptions[UnityEngine.Random.Range(0, principalOptions.Count)]);
-        if (acompanhamentoOptions.Count > 0) list.Add(acompanhamentoOptions[UnityEngine.Random.Range(0, acompanhamentoOptions.Count)]);
+        if (principal != null) list.Add(principal);
+        if (acompanhamento != null) list.Add(acompanhamento);
     }
 
-    private void AddDrinkToIngredients(List<Ingredient> list, bool isVegan)
+    private void BuildDrinkLine(List<Ingredient> list, bool isVegan)
     {
-        bool isDrink = UnityEngine.Random.value > 0.5f;
-        if (!isDrink)
-        {
-            List<Food> frutaOptions = foodIngredients.Where(f => f.category == FoodCategory.Fruta && f.isVegan == isVegan).ToList();
-            List<Beverage> acompanhamentoOptions = beverageIngredients.Where(b => b.category == BeverageCategory.Juice && b.type.HasFlag(IngredientFlags.Acompanhamento) && b.isVegan == isVegan).ToList();
+        var targetCategory = UnityEngine.Random.value > 0.5f ? BeverageCategory.Drink : BeverageCategory.Juice;
 
-            if (frutaOptions.Count > 0 && acompanhamentoOptions.Count > 0)
-            {
-                list.Add(frutaOptions[UnityEngine.Random.Range(0, frutaOptions.Count)]);
-                list.Add(acompanhamentoOptions[UnityEngine.Random.Range(0, acompanhamentoOptions.Count)]);
-            }
-        }
-        else
-        {
-            List<Beverage> baseDrinkOptions = beverageIngredients.Where(b => b.category == BeverageCategory.Drink && b.type.HasFlag(IngredientFlags.Principal) && b.isVegan == isVegan).ToList();
-            List<Food> frutaOptions = foodIngredients.Where(f => f.category == FoodCategory.Fruta && f.isVegan == isVegan).ToList();
-            List<Beverage> acompanhamentoOptions = beverageIngredients.Where(b => b.category == BeverageCategory.Drink && b.type.HasFlag(IngredientFlags.Acompanhamento) && b.isVegan == isVegan).ToList();
+        var baseDrink = GetBeverageWithVeganFallback(
+            b => b.category == targetCategory && b.type.HasFlag(IngredientFlags.Principal), isVegan);
 
-            if (baseDrinkOptions.Count > 0) list.Add(baseDrinkOptions[UnityEngine.Random.Range(0, baseDrinkOptions.Count)]);
-            if (frutaOptions.Count > 0) list.Add(frutaOptions[UnityEngine.Random.Range(0, frutaOptions.Count)]);
-            if (acompanhamentoOptions.Count > 0) list.Add(acompanhamentoOptions[UnityEngine.Random.Range(0, acompanhamentoOptions.Count)]);
-        }
+        var fruta = GetFoodWithVeganFallback(
+            f => f.category == FoodCategory.Fruta, isVegan);
+
+        if (baseDrink != null) list.Add(baseDrink);
+        if (fruta != null) list.Add(fruta);
     }
 
     private bool IsValid(Order order)
     {
-        if (order == null || order.ingredientes == null || order.ingredientes.Count == 0) return false;
+        if (order?.ingredientes == null || order.ingredientes.Count == 0) return false;
+        if (order.ingredientes.All(IsFruit)) return false;
+        if (order.ingredientes.Count(i => i.ingredientName.Trim() == "Fries") > 1) return false;
 
-        bool containsOnlyFruits = order.ingredientes.All(i => i is Food f && f.category == FoodCategory.Fruta);
-        if (containsOnlyFruits) return false;
+        bool hasBeverage = order.ingredientes.Any(i => i is Beverage);
+        bool hasFood = order.ingredientes.Any(i => i is Food f && !IsFruit(f));
 
-        int friesCount = order.ingredientes.Count(i => i.ingredientName.Trim() == "Fries");
-        if (friesCount > 1) return false;
-
-        bool isFoodOrder = order.ingredientes.Any(i => i is Food);
-        if (isFoodOrder)
-        {
-            foreach (Ingredient ingredient in order.ingredientes)
-            {
-                if (ingredient is Food f && f.category == FoodCategory.Fruta && f.type.HasFlag(IngredientFlags.Acompanhamento))
-                {
-                    return false;
-                }
-            }
-        }
+        if (hasBeverage && hasFood) return false;
+        if (hasFood && order.ingredientes.Any(IsFruit)) return false;
 
         return true;
     }
 
-    private Order CreateDefaultOrder(int quantity)
+    private bool IsFruit(Ingredient i)
     {
-        List<Ingredient> allIngredients = foodIngredients.Cast<Ingredient>().Concat(beverageIngredients.Cast<Ingredient>()).ToList();
+        return i is Food f && f.category == FoodCategory.Fruta;
+    }
 
-        List<Ingredient> ingredients = new List<Ingredient>();
-        Ingredient principal = allIngredients.FirstOrDefault(i => i != null && i.type.HasFlag(IngredientFlags.Principal));
-        Ingredient acompanhante = allIngredients.FirstOrDefault(i => i != null && i.type.HasFlag(IngredientFlags.Acompanhamento));
-
-        if (principal != null) ingredients.Add(principal);
-        if (acompanhante != null) ingredients.Add(acompanhante);
-
-        if (ingredients.Count == 0 && allIngredients.Count > 0)
+    private Food GetFoodWithVeganFallback(Func<Food, bool> predicate, bool isVegan)
+    {
+        var filtered = FilterFood(predicate, isVegan);
+        if (filtered.Count == 0 && !isVegan)
         {
-            ingredients.Add(allIngredients[0]);
+            filtered = FilterFood(predicate, false);
         }
 
+        if (filtered.Count > 0)
+        {
+            return filtered[UnityEngine.Random.Range(0, filtered.Count)];
+        }
+        return null;
+    }
+
+    private Beverage GetBeverageWithVeganFallback(Func<Beverage, bool> predicate, bool isVegan)
+    {
+        var filtered = FilterBeverage(predicate, isVegan);
+        if (filtered.Count == 0 && !isVegan)
+        {
+            filtered = FilterBeverage(predicate, false);
+        }
+
+        if (filtered.Count > 0)
+        {
+            return filtered[UnityEngine.Random.Range(0, filtered.Count)];
+        }
+        return null;
+    }
+    private List<Food> FilterFood(Func<Food, bool> predicate, bool veganOnly)
+    {
+        var result = new List<Food>();
+        foreach (var item in foodIngredients)
+        {
+            if (item != null && predicate(item) && (!veganOnly || item.isVegan))
+            {
+                result.Add(item);
+            }
+        }
+        return result;
+    }
+
+    private List<Beverage> FilterBeverage(Func<Beverage, bool> predicate, bool veganOnly)
+    {
+        var result = new List<Beverage>();
+        foreach (var item in beverageIngredients)
+        {
+            if (item != null && predicate(item) && (!veganOnly || item.isVegan))
+            {
+                result.Add(item);
+            }
+        }
+        return result;
+    }
+
+    private List<FoodCategory> GetFoodCategoriesExceptFruta()
+    {
+        var result = new List<FoodCategory>();
+        foreach (FoodCategory v in Enum.GetValues(typeof(FoodCategory)))
+        {
+            if (v != FoodCategory.Fruta)
+            {
+                result.Add(v);
+            }
+        }
+        return result;
+    }
+
+    private Order CreateDefaultOrder(int quantity)
+    {
+        var principal = foodIngredients.Find(f =>
+            f != null && f.type.HasFlag(IngredientFlags.Principal) && f.category != FoodCategory.Fruta);
+
+        var ingredients = new List<Ingredient>();
+        if (principal != null) ingredients.Add(principal);
         return new Order(quantity, ingredients);
     }
 }

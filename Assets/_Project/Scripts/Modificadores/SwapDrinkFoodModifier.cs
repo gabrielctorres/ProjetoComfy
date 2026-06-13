@@ -18,69 +18,25 @@ public class SwapDrinkFoodModifier : OrderDebuff
             veganChance: 0.5f,
             foodOnlyChance: 0.1f,
             drinkOnlyChance: 0.1f,
-            mixedChance: 0.8f);
+            mixedChance: 0.8f
+        );
     }
 
     public override Tab ApplyDebuffToTab(Tab originalTab, List<Food> foodIngredients, List<Beverage> beverageIngredients)
     {
-        Tab fakeTab = ScriptableObject.CreateInstance<Tab>();
-        fakeTab.pedidos = new List<Order>();
+        Tab fakeTab = CopyTab(originalTab);
 
-        foreach (Order order in originalTab.pedidos)
+        Order foodOrder = FindFoodOrder(fakeTab);
+        Order drinkOrder = FindDrinkOrder(fakeTab);
+
+        if (!CanApplyDebuff(fakeTab, foodOrder, drinkOrder))
         {
-            fakeTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
+            return CancelModifier(fakeTab);
         }
 
-        if (fakeTab.pedidos.Count < 2)
+        if (!TrySwapSides(foodOrder, drinkOrder))
         {
-            fakeTab.name = "Comanda Bagunçada (Fake)";
-            fakeTab.isFake = true;
-            return fakeTab;
-        }
-
-        List<Ingredient> todosPrincipais = new List<Ingredient>();
-        List<Ingredient> todosAcompanhamentos = new List<Ingredient>();
-
-        foreach (Order order in fakeTab.pedidos)
-        {
-            foreach (Ingredient ing in order.ingredientes)
-            {
-                if (ing.type.HasFlag(IngredientFlags.Principal))
-                    todosPrincipais.Add(ing);
-                else if (ing.type.HasFlag(IngredientFlags.Acompanhamento))
-                    todosAcompanhamentos.Add(ing);
-            }
-        }
-
-        RotacionarLista(todosPrincipais);
-        RotacionarLista(todosAcompanhamentos);
-
-        int indexPrincipal = 0;
-        int indexAcompanhamento = 0;
-
-        foreach (Order order in fakeTab.pedidos)
-        {
-            List<Ingredient> novosIngredientes = new List<Ingredient>();
-
-            foreach (Ingredient ing in order.ingredientes)
-            {
-                if (ing.type.HasFlag(IngredientFlags.Principal) && todosPrincipais.Count > 0)
-                {
-                    novosIngredientes.Add(todosPrincipais[indexPrincipal]);
-                    indexPrincipal = (indexPrincipal + 1) % todosPrincipais.Count;
-                }
-                else if (ing.type.HasFlag(IngredientFlags.Acompanhamento) && todosAcompanhamentos.Count > 0)
-                {
-                    novosIngredientes.Add(todosAcompanhamentos[indexAcompanhamento]);
-                    indexAcompanhamento = (indexAcompanhamento + 1) % todosAcompanhamentos.Count;
-                }
-                else
-                {
-                    novosIngredientes.Add(ing);
-                }
-            }
-
-            order.ingredientes = novosIngredientes;
+            return CancelModifier(fakeTab);
         }
 
         fakeTab.name = "Comanda Fake";
@@ -88,12 +44,56 @@ public class SwapDrinkFoodModifier : OrderDebuff
         return fakeTab;
     }
 
-    private void RotacionarLista(List<Ingredient> lista)
+    private bool TrySwapSides(Order foodOrder, Order drinkOrder)
     {
-        if (lista.Count < 2) return;
+        Ingredient foodSide = FindSide(foodOrder);
+        Ingredient drinkSide = FindSide(drinkOrder);
 
-        Ingredient primeiro = lista[0];
-        lista.RemoveAt(0);
-        lista.Add(primeiro);
+        if (foodSide == null || drinkSide == null) return false;
+
+        foodOrder.ingredientes[foodOrder.ingredientes.IndexOf(foodSide)] = drinkSide;
+        drinkOrder.ingredientes[drinkOrder.ingredientes.IndexOf(drinkSide)] = foodSide;
+        return true;
+    }
+
+    private Order FindFoodOrder(Tab tab)
+    {
+        return tab.pedidos.FirstOrDefault(o =>
+            o.ingredientes.Any(i => i is Food f
+                && f.type.HasFlag(IngredientFlags.Principal)
+                && f.category != FoodCategory.Fruta));
+    }
+
+    private Order FindDrinkOrder(Tab tab)
+    {
+        return tab.pedidos.FirstOrDefault(o =>
+            o.ingredientes.Any(i => i is Beverage b
+                && b.type.HasFlag(IngredientFlags.Principal)));
+    }
+
+    private Ingredient FindSide(Order order)
+    {
+        return order.ingredientes.FirstOrDefault(i => i.type.HasFlag(IngredientFlags.Acompanhamento));
+    }
+
+    private bool CanApplyDebuff(Tab tab, Order foodOrder, Order drinkOrder)
+    {
+        return tab.pedidos.Count >= 2 && foodOrder != null && drinkOrder != null;
+    }
+
+    private Tab CopyTab(Tab original)
+    {
+        Tab copy = ScriptableObject.CreateInstance<Tab>();
+        copy.pedidos = original.pedidos
+            .Select(o => new Order(o.quantity, new List<Ingredient>(o.ingredientes)))
+            .ToList();
+        return copy;
+    }
+
+    private Tab CancelModifier(Tab tab)
+    {
+        tab.name = "Comanda Normal";
+        tab.isFake = false;
+        return tab;
     }
 }

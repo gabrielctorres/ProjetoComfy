@@ -1078,6 +1078,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70fd7921ebf62a64ab73956e23e3b8ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrderProcessor
+  factoryTab: {fileID: 1522893678}
 --- !u!1 &1241999445
 GameObject:
   m_ObjectHideFlags: 0
@@ -1894,12 +1895,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 65f70ede9c818164cb1cef4ae4d52d34, type: 2}
   - {fileID: 11400000, guid: 6ae3b19788c00764d8b79965f6ca365e, type: 2}
   - {fileID: 11400000, guid: da71f4be4023e34409e946d0bfc2b647, type: 2}
+  - {fileID: 11400000, guid: 6814a080b40937b47819b2fdbf808c8b, type: 2}
+  - {fileID: 11400000, guid: 61a40b0b89e9ea843b35f68d68b7719c, type: 2}
+  - {fileID: 11400000, guid: a0e6e7ed7a3afb447a8f2cbac95f2248, type: 2}
   beverageIngredients:
   - {fileID: 11400000, guid: ca46b4ec883dad147ba5cc74622be784, type: 2}
   - {fileID: 11400000, guid: 3d2bb2a2b0d37e441bfc9cefab6931f1, type: 2}
-  minOrdersPerTab: 1
-  maxOrdersPerTab: 4
-  maxQuantityPerOrder: 3
+  minOrders: 1
+  maxOrders: 4
+  maxQuantity: 3
 --- !u!4 &1522893679
 Transform:
   m_ObjectHideFlags: 0
@@ -2163,7 +2167,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayManager
   totalDays: 5
-  dayDurationInSeconds: 120
 --- !u!1 &1790353649
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,10 +5,9 @@ using UnityEngine;
 public class OrderProcessor : MonoBehaviour
 {
     [Header("Configurações de Ingredientes")]
-    [SerializeField] private FactoryTab factoryTab; // Para obter as listas de ingredientes puras
+    [SerializeField] private FactoryTab factoryTab;
 
-    private List<IOrderModifier> modifiers = new List<IOrderModifier>();
-    private OrderDebuff currentActiveDebuff; // Guardado via evento
+    private OrderDebuff currentActiveDebuff;
 
     public static event Action OnOrderFinished;
 
@@ -27,21 +26,9 @@ public class OrderProcessor : MonoBehaviour
         currentActiveDebuff = newDebuff;
     }
 
-    public void AddModifier(IOrderModifier modifier)
-    {
-        if (!modifiers.Contains(modifier))
-            modifiers.Add(modifier);
-    }
-
     public Tab ProcessTab(Tab originalTab)
     {
         Tab processedTab = originalTab;
-
-        foreach (IOrderModifier modifier in modifiers)
-        {
-            processedTab = modifier.Modify(processedTab);
-        }
-
         if (currentActiveDebuff != null)
         {
             processedTab = currentActiveDebuff.ApplyDebuffToTab(processedTab, factoryTab.foodIngredients, factoryTab.beverageIngredients);
