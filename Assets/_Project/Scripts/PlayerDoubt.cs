@@ -42,6 +42,11 @@ public class PlayerDoubt : MonoBehaviour
             doubts.Add(id);
             ApplyRichStyle(id, "mark=#eb3434");
         }
+        else
+        {
+            doubts.Remove(id);
+            RemoveRichStyle(id);
+        }
     }
 
     public void SubmitDoubts()
@@ -68,10 +73,28 @@ public class PlayerDoubt : MonoBehaviour
         {
             tabText.text = Regex.Replace(textoOriginal, pattern, match =>
             {
-                string textoInternoReal = match.Groups[1].Value;
-                string limpo = Regex.Replace(textoInternoReal, @"<[^>]*>", "");
+                string textoInterno = match.Groups[1].Value;
 
-                return $"<link=\"{linkID}\"><{innerStyle}>{limpo}</{innerStyle}></link>";
+                return $"<link=\"{linkID}\"><{innerStyle}>{textoInterno}</{innerStyle}></link>";
+            });
+        }
+    }
+
+    public void RemoveRichStyle(string linkID)
+    {
+        string textoOriginal = tabText.text;
+
+        string pattern = @"<link=""" + Regex.Escape(linkID) + @""">(.*?)</link>";
+
+        if (Regex.IsMatch(textoOriginal, pattern))
+        {
+            tabText.text = Regex.Replace(textoOriginal, pattern, match =>
+            {
+                string textoInterno = match.Groups[1].Value;
+
+                string limpo = Regex.Replace(textoInterno, @"<mark=[^>]*>(.*?)</mark>", "$1");
+
+                return $"<link=\"{linkID}\">{limpo}</link>";
             });
         }
     }

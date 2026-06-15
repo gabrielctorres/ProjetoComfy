@@ -9,19 +9,21 @@ public class SwapDrinkFoodModifier : OrderDebuff
         Name = "Senhorinha";
     }
 
-    public override SpawnRules ModifySpawnRules(SpawnRules defaultRules)
+    public override TabRules ModifySpawnRules(TabRules defaultRules)
     {
-        return new SpawnRules(
+        return new TabRules(
             minOrders: Mathf.Max(2, defaultRules.maxOrders - 1),
             maxOrders: defaultRules.maxOrders,
             maxQuantity: defaultRules.maxQuantity,
             veganChance: 0.5f,
             foodOnlyChance: 0.1f,
             drinkOnlyChance: 0.1f,
-            mixedChance: 0.8f
+            mixedChance: 0.8f,
+            sidelessChance: 0.05f,
+            extraSideChance: 0.25f,
+            varySideCategory: true
         );
     }
-
     public override Tab ApplyDebuffToTab(Tab originalTab, List<Food> foodIngredients, List<Beverage> beverageIngredients)
     {
         Tab fakeTab = CopyTab(originalTab);
@@ -29,25 +31,19 @@ public class SwapDrinkFoodModifier : OrderDebuff
         Order foodOrder = FindFoodOrder(fakeTab);
         Order drinkOrder = FindDrinkOrder(fakeTab);
 
-        if (!CanApplyDebuff(fakeTab, foodOrder, drinkOrder))
+        if (!CanApplyDebuff(fakeTab, foodOrder, drinkOrder) || !TrySwapSides(foodOrder, drinkOrder))
         {
-            return CancelModifier(fakeTab);
+            CancelModifier(originalTab);
+            return originalTab;
         }
 
-        if (!TrySwapSides(foodOrder, drinkOrder))
-        {
-            return CancelModifier(fakeTab);
-        }
-
-        fakeTab.name = "Comanda Fake";
-        fakeTab.isFake = true;
+        fakeTab.name = "Comanda Senhora";
         return fakeTab;
     }
-
     private bool TrySwapSides(Order foodOrder, Order drinkOrder)
     {
-        Ingredient foodSide = FindSide(foodOrder);
-        Ingredient drinkSide = FindSide(drinkOrder);
+        Ingredient foodSide = FindSwappable(foodOrder);
+        Ingredient drinkSide = FindSwappable(drinkOrder);
 
         if (foodSide == null || drinkSide == null) return false;
 
@@ -58,22 +54,20 @@ public class SwapDrinkFoodModifier : OrderDebuff
 
     private Order FindFoodOrder(Tab tab)
     {
-        return tab.pedidos.FirstOrDefault(o =>
-            o.ingredientes.Any(i => i is Food f
-                && f.type.HasFlag(IngredientFlags.Principal)
-                && f.category != FoodCategory.Fruta));
+        return tab.pedidos.FirstOrDefault(o => o.ingredientes.Any(i => i is Food f && f.type.HasFlag(IngredientFlags.Principal) && f.category != FoodCategory.Fruta) && o.ingredientes.Count >= 2);
     }
 
     private Order FindDrinkOrder(Tab tab)
     {
-        return tab.pedidos.FirstOrDefault(o =>
-            o.ingredientes.Any(i => i is Beverage b
-                && b.type.HasFlag(IngredientFlags.Principal)));
+        return tab.pedidos.FirstOrDefault(o => o.ingredientes.Any(i => i is Beverage b && b.type.HasFlag(IngredientFlags.Principal)) && o.ingredientes.Count >= 2);
     }
 
-    private Ingredient FindSide(Order order)
+    private Ingredient FindSwappable(Order order)
     {
-        return order.ingredientes.FirstOrDefault(i => i.type.HasFlag(IngredientFlags.Acompanhamento));
+        Ingredient side = order.ingredientes.FirstOrDefault(i => i.type.HasFlag(IngredientFlags.Acompanhamento));
+        if (side != null) return side;
+
+        return order.ingredientes.FirstOrDefault(i => !i.type.HasFlag(IngredientFlags.Principal));
     }
 
     private bool CanApplyDebuff(Tab tab, Order foodOrder, Order drinkOrder)
@@ -83,17 +77,12 @@ public class SwapDrinkFoodModifier : OrderDebuff
 
     private Tab CopyTab(Tab original)
     {
-        Tab copy = ScriptableObject.CreateInstance<Tab>();
-        copy.pedidos = original.pedidos
-            .Select(o => new Order(o.quantity, new List<Ingredient>(o.ingredientes)))
-            .ToList();
+        Tab copy = ScriptableObject.CreateInstance<Tab>(); copy.pedidos = original.pedidos.Select(o => new Order(o.quantity, new List<Ingredient>(o.ingredientes))).ToList();
         return copy;
     }
-
     private Tab CancelModifier(Tab tab)
     {
-        tab.name = "Comanda Normal";
-        tab.isFake = false;
+        tab.name = "Comanda Normal(Senhora)";
         return tab;
     }
 }

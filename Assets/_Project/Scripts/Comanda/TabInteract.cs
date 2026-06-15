@@ -3,10 +3,11 @@ using UnityEngine;
 using TMPro;
 public class TabInteract : MonoBehaviour, IInteractable
 {
-    public Tab tabData;
+    public Tab fakeTab;
+    public Tab originalTab;
     public TextMeshProUGUI tabText;
     public int count;
-    public static event Action<Tab> OnTabOpen;
+    public static event Action<Tab, Tab> OnTabOpen;
 
     public void Start()
     {
@@ -14,6 +15,6 @@ public class TabInteract : MonoBehaviour, IInteractable
     }
     public void Interact()
     {
-        OnTabOpen?.Invoke(this.tabData);
+        OnTabOpen?.Invoke(this.fakeTab, this.originalTab);
     }
 }

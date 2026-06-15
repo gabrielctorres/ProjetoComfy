@@ -30,19 +30,20 @@ public class DayManager : MonoBehaviour
 
         OrderDebuff activeDebuff = ChooseDebuffForCurrentDay();
 
-        Debug.Log($"Dia {CurrentDay} começou!");
+        Debug.Log($"Dia {CurrentDay} começou, Debuff Ativo: {(activeDebuff != null ? activeDebuff.Name : "Nenhum")}");
 
-        OnDayStarted?.Invoke(CurrentDay);
         OnDebuffChanged?.Invoke(activeDebuff);
+        OnDayStarted?.Invoke(CurrentDay);
     }
 
     private OrderDebuff ChooseDebuffForCurrentDay()
     {
-        int random = 1;
+        int random = 1; // mudar isso dps
         switch (random)
         {
             case 0: return new ChangeQuantityModifier();
-            default: return new SwapDrinkFoodModifier();
+            case 1: return new SwapDrinkFoodModifier();
+            default: return new CategorySwapModifier();
         }
     }
 
@@ -51,7 +52,7 @@ public class DayManager : MonoBehaviour
         IsDayActive = false;
         OnDebuffChanged?.Invoke(null);
 
-        Debug.Log($"Dia {CurrentDay} terminou!");
+        Debug.Log($"Dia {CurrentDay} terminou");
         OnDayEnded?.Invoke();
         CurrentDay++;
     }

@@ -24,19 +24,26 @@ public class OrderProcessor : MonoBehaviour
     private void UpdateActiveDebuff(OrderDebuff newDebuff)
     {
         currentActiveDebuff = newDebuff;
+        Debug.Log($"[OrderProcessor] Debuff atualizado: {(newDebuff != null ? newDebuff.Name : "null")}");
     }
 
     public Tab ProcessTab(Tab originalTab)
     {
+        Debug.Log($"[OrderProcessor] ProcessTab chamado. currentActiveDebuff = {(currentActiveDebuff != null ? currentActiveDebuff.Name : "null")}");
+
+        if (factoryTab == null)
+        {
+            Debug.LogError("[OrderProcessor] factoryTab não está atribuído no Inspector!");
+            return originalTab;
+        }
+
+        Debug.Log($"[OrderProcessor] Ingredientes disponíveis - Comida: {factoryTab.foodIngredients.Count}, Bebida: {factoryTab.beverageIngredients.Count}");
+
         Tab processedTab = originalTab;
+
         if (currentActiveDebuff != null)
         {
             processedTab = currentActiveDebuff.ApplyDebuffToTab(processedTab, factoryTab.foodIngredients, factoryTab.beverageIngredients);
-        }
-        else
-        {
-            processedTab.name = "fakeTab";
-            processedTab.isFake = true;
         }
 
         return processedTab;

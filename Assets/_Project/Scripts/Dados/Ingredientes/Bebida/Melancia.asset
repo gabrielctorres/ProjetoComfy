@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfe7fed857e95a54c85b91f547f1c5e2, type: 3}
-  m_Name: Fries
-  m_EditorClassIdentifier: Assembly-CSharp::Food
-  ingredientName: Fries
-  type: 2
+  m_Script: {fileID: 11500000, guid: 744a06b0daf2e7a4ead918c73591d6ad, type: 3}
+  m_Name: Melancia
+  m_EditorClassIdentifier: Assembly-CSharp::Beverage
+  ingredientName: Melancia
+  type: 1
   isVegan: 0
-  category: 1
+  category: 0
+  strength: 0

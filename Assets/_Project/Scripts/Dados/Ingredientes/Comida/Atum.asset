@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfe7fed857e95a54c85b91f547f1c5e2, type: 3}
-  m_Name: Fries
+  m_Name: Atum
   m_EditorClassIdentifier: Assembly-CSharp::Food
-  ingredientName: Fries
-  type: 2
+  ingredientName: Atum
+  type: 1
   isVegan: 0
-  category: 1
+  category: 0

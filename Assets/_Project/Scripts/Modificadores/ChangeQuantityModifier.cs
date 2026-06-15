@@ -21,7 +21,10 @@ public class ChangeQuantityModifier : OrderDebuff
             fakeTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
         }
 
-        if (fakeTab.pedidos.Count == 0) return fakeTab;
+        if (fakeTab.pedidos.Count == 0)
+        {
+            return fakeTab;
+        }
 
         int randomOrderIndex = Random.Range(0, fakeTab.pedidos.Count);
         Order targetOrder = fakeTab.pedidos[randomOrderIndex];
@@ -43,7 +46,6 @@ public class ChangeQuantityModifier : OrderDebuff
         }
 
         fakeTab.name = "Comanda Fake";
-        fakeTab.isFake = true;
         return fakeTab;
     }
 }

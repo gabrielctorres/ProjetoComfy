@@ -5,7 +5,6 @@ using UnityEngine;
 public class Tab : ScriptableObject
 {
     public List<Order> pedidos;
-    public bool isFake = false;
 }
 
 [System.Serializable]

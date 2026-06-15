@@ -4,7 +4,7 @@ public abstract class OrderDebuff
 {
     public string Name { get; protected set; }
 
-    public virtual SpawnRules ModifySpawnRules(SpawnRules defaultRules)
+    public virtual TabRules ModifySpawnRules(TabRules defaultRules)
     {
         return defaultRules;
     }

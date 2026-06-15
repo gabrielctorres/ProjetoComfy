@@ -13,15 +13,15 @@ public class FactoryTab : MonoBehaviour
     [SerializeField] private int maxOrders = 4;
     [SerializeField] private int maxQuantity = 3;
 
-    private SpawnRules defaultRules;
-    public SpawnRules DefaultRules => defaultRules;
+    private TabRules defaultRules;
+    public TabRules DefaultRules => defaultRules;
 
     private void Awake()
     {
-        defaultRules = new SpawnRules(minOrders, maxOrders, maxQuantity);
+        defaultRules = new TabRules(minOrders, maxOrders, maxQuantity);
     }
 
-    public Tab CreateTab(SpawnRules customRules = null)
+    public Tab CreateTab(TabRules customRules = null)
     {
         var rules = customRules ?? defaultRules;
         var tab = ScriptableObject.CreateInstance<Tab>();
@@ -37,33 +37,37 @@ public class FactoryTab : MonoBehaviour
 
             tab.pedidos.Add(GenerateSingleOrder(rules, forceFood, forceDrink));
         }
-
+        tab.name = "Comanda Normal";
         return tab;
     }
 
-    private Order GenerateSingleOrder(SpawnRules rules, bool forceFood, bool forceDrink)
-    {
-        for (int attempt = 0; attempt < 10; attempt++)
-        {
-            var order = GenerateOrderAttempt(rules, forceFood, forceDrink);
-            if (IsValid(order)) return order;
-        }
-        return CreateDefaultOrder(UnityEngine.Random.Range(1, rules.maxQuantity + 1));
-    }
-
-    private Order GenerateOrderAttempt(SpawnRules rules, bool forceFood, bool forceDrink)
+    private Order GenerateSingleOrder(TabRules rules, bool forceFood, bool forceDrink)
     {
         bool isVegan = UnityEngine.Random.value < rules.veganChance;
-        var ingredients = new List<Ingredient>();
 
-        if (forceFood) BuildFoodLine(ingredients, isVegan);
-        else if (forceDrink) BuildDrinkLine(ingredients, isVegan);
+        for (int attempt = 0; attempt < 10; attempt++)
+        {
+            var order = GenerateOrderAttempt(rules, forceFood, forceDrink, isVegan);
+            if (IsValid(order)) return order;
+        }
 
-        int qty = UnityEngine.Random.Range(1, rules.maxQuantity + 1);
-        return ingredients.Count > 0 ? new Order(qty, ingredients) : CreateDefaultOrder(qty);
+        Debug.Log($"[FactoryTab] O gerador falhou em criar um pedido válido após 10 tentativas! Gerando pedido padrão baseado nas regras. ForceFood: {forceFood}, ForceDrink: {forceDrink}");
+        return CreateDefaultOrder(rules, UnityEngine.Random.Range(1, rules.maxQuantity + 1), forceFood, forceDrink, isVegan);
     }
 
-    private void BuildFoodLine(List<Ingredient> list, bool isVegan)
+    private Order GenerateOrderAttempt(TabRules rules, bool forceFood, bool forceDrink, bool isVegan)
+    {
+        var ingredients = new List<Ingredient>();
+
+        if (forceFood) BuildFoodLine(ingredients, isVegan, rules);
+        else if (forceDrink) BuildDrinkLine(ingredients, isVegan, rules);
+
+        int qty = UnityEngine.Random.Range(1, rules.maxQuantity + 1);
+
+        return ingredients.Count > 0 ? new Order(qty, ingredients) : CreateDefaultOrder(rules, qty, forceFood, forceDrink, isVegan);
+    }
+
+    private void BuildFoodLine(List<Ingredient> list, bool isVegan, TabRules rules)
     {
         var categories = GetFoodCategoriesExceptFruta();
         if (categories.Count == 0) return;
@@ -73,25 +77,68 @@ public class FactoryTab : MonoBehaviour
         var principal = GetFoodWithVeganFallback(
             f => f.category == cat && f.type.HasFlag(IngredientFlags.Principal), isVegan);
 
-        var acompanhamento = GetFoodWithVeganFallback(
-            f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta, isVegan);
-
         if (principal != null) list.Add(principal);
-        if (acompanhamento != null) list.Add(acompanhamento);
+
+        bool skipSide = UnityEngine.Random.value < rules.sidelessChance;
+
+        if (!skipSide)
+        {
+            var sideCategory = rules.varySideCategory
+                ? categories[UnityEngine.Random.Range(0, categories.Count)]
+                : cat;
+
+            var acompanhamento = GetFoodWithVeganFallback(
+                f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta
+                     && (!rules.varySideCategory || f.category == sideCategory),
+                isVegan);
+
+            if (acompanhamento == null && rules.varySideCategory)
+            {
+                acompanhamento = GetFoodWithVeganFallback(
+                    f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta,
+                    isVegan);
+            }
+
+            if (acompanhamento != null) list.Add(acompanhamento);
+
+            if (acompanhamento != null && UnityEngine.Random.value < rules.extraSideChance)
+            {
+                var segundo = GetFoodWithVeganFallback(
+                    f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta
+                         && f != acompanhamento,
+                    isVegan);
+
+                if (segundo != null) list.Add(segundo);
+            }
+        }
     }
 
-    private void BuildDrinkLine(List<Ingredient> list, bool isVegan)
+    private void BuildDrinkLine(List<Ingredient> list, bool isVegan, TabRules rules)
     {
         var targetCategory = UnityEngine.Random.value > 0.5f ? BeverageCategory.Drink : BeverageCategory.Juice;
 
         var baseDrink = GetBeverageWithVeganFallback(
             b => b.category == targetCategory && b.type.HasFlag(IngredientFlags.Principal), isVegan);
 
-        var fruta = GetFoodWithVeganFallback(
-            f => f.category == FoodCategory.Fruta, isVegan);
-
         if (baseDrink != null) list.Add(baseDrink);
-        if (fruta != null) list.Add(fruta);
+
+        bool skipExtra = UnityEngine.Random.value < rules.sidelessChance;
+
+        if (!skipExtra)
+        {
+            var fruta = GetFoodWithVeganFallback(
+                f => f.category == FoodCategory.Fruta, isVegan);
+
+            if (fruta != null) list.Add(fruta);
+
+            if (fruta != null && UnityEngine.Random.value < rules.extraSideChance)
+            {
+                var segundaFruta = GetFoodWithVeganFallback(
+                    f => f.category == FoodCategory.Fruta && f != fruta, isVegan);
+
+                if (segundaFruta != null) list.Add(segundaFruta);
+            }
+        }
     }
 
     private bool IsValid(Order order)
@@ -143,6 +190,7 @@ public class FactoryTab : MonoBehaviour
         }
         return null;
     }
+
     private List<Food> FilterFood(Func<Food, bool> predicate, bool veganOnly)
     {
         var result = new List<Food>();
@@ -182,13 +230,27 @@ public class FactoryTab : MonoBehaviour
         return result;
     }
 
-    private Order CreateDefaultOrder(int quantity)
+    private Order CreateDefaultOrder(TabRules rules, int quantity, bool forceFood, bool forceDrink, bool isVegan)
     {
-        var principal = foodIngredients.Find(f =>
-            f != null && f.type.HasFlag(IngredientFlags.Principal) && f.category != FoodCategory.Fruta);
-
         var ingredients = new List<Ingredient>();
-        if (principal != null) ingredients.Add(principal);
+
+        if (forceDrink)
+        {
+            var defaultDrink = GetBeverageWithVeganFallback(b => b.type.HasFlag(IngredientFlags.Principal), isVegan);
+            if (defaultDrink != null) ingredients.Add(defaultDrink);
+        }
+        else
+        {
+            var defaultFood = GetFoodWithVeganFallback(f => f.type.HasFlag(IngredientFlags.Principal) && f.category != FoodCategory.Fruta, isVegan);
+            if (defaultFood != null) ingredients.Add(defaultFood);
+        }
+
+        if (ingredients.Count == 0)
+        {
+            if (foodIngredients.Count > 0) ingredients.Add(foodIngredients[0]);
+            else if (beverageIngredients.Count > 0) ingredients.Add(beverageIngredients[0]);
+        }
+
         return new Order(quantity, ingredients);
     }
 }
