@@ -9,13 +9,13 @@ public class SwapDrinkFoodModifier : IOrderModifier
         Tab modifiedTab = ScriptableObject.CreateInstance<Tab>();
         modifiedTab.pedidos = new List<Order>();
 
-        foreach (var order in originalTab.pedidos)
+        foreach (Order order in originalTab.pedidos)
         {
             modifiedTab.pedidos.Add(new Order(order.quantity, new List<Ingredient>(order.ingredientes)));
         }
 
-        var principalIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
-        var acompanhamentoIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
+        List<(int orderIdx, int ingIdex, bool isVegan)> principalIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
+        List<(int orderIdx, int ingIdx, bool isVegan)> acompanhamentoIngredients = new List<(int orderIdx, int ingIdx, bool isVegan)>();
 
         for (int o = 0; o < modifiedTab.pedidos.Count; o++)
         {
@@ -39,8 +39,8 @@ public class SwapDrinkFoodModifier : IOrderModifier
     {
         if (candidates.Count < 2) return;
 
-        var veganCandidates = candidates.Where(c => c.isVegan).ToList();
-        var meatCandidates = candidates.Where(c => !c.isVegan).ToList();
+        List<(int orderIdx, int ingIdx, bool isVegan)> veganCandidates = candidates.Where(c => c.isVegan).ToList();
+        List<(int orderIdx, int ingIdx, bool isVegan)> meatCandidates = candidates.Where(c => !c.isVegan).ToList();
 
         PerformSwap(tab, veganCandidates);
         PerformSwap(tab, meatCandidates);
@@ -50,8 +50,8 @@ public class SwapDrinkFoodModifier : IOrderModifier
     {
         if (list.Count < 2) return;
 
-        var first = list[Random.Range(0, list.Count)];
-        var second = list[Random.Range(0, list.Count)];
+        (int orderIdx, int ingIdx, bool isVegan) first = list[Random.Range(0, list.Count)];
+        (int orderIdx, int ingIdx, bool isVegan) second = list[Random.Range(0, list.Count)];
 
         if (first.orderIdx == second.orderIdx && first.ingIdx == second.ingIdx) return;
 

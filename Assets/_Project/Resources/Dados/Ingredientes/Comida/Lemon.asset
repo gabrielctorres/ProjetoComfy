@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Lemon
   m_EditorClassIdentifier: Assembly-CSharp::Food
   ingredientName: Lemon
-  orderName: 
-  type: -1
+  type: 2
   isVegan: 0
   category: 2

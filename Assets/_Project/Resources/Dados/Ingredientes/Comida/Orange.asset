@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfe7fed857e95a54c85b91f547f1c5e2, type: 3}
   m_Name: Orange
   m_EditorClassIdentifier: Assembly-CSharp::Food
-  ingredientName: Lemon
-  orderName: 
-  type: -1
+  ingredientName: Orange
+  type: 2
   isVegan: 0
   category: 2
