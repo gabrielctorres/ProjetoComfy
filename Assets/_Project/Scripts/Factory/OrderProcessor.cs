@@ -4,25 +4,48 @@ using UnityEngine;
 
 public class OrderProcessor : MonoBehaviour
 {
-    private List<IOrderModifier> modifiers = new List<IOrderModifier>();
+    [Header("Configurações de Ingredientes")]
+    [SerializeField] private FactoryTab factoryTab;
+
+    private OrderDebuff currentActiveDebuff;
+
     public static event Action OnOrderFinished;
 
-    public void AddModifier(IOrderModifier modifier)
+    private void OnEnable()
     {
-        if (!modifiers.Contains(modifier))
-            modifiers.Add(modifier);
+        DayManager.OnDebuffChanged += UpdateActiveDebuff;
+    }
+
+    private void OnDisable()
+    {
+        DayManager.OnDebuffChanged -= UpdateActiveDebuff;
+    }
+
+    private void UpdateActiveDebuff(OrderDebuff newDebuff)
+    {
+        currentActiveDebuff = newDebuff;
+        Debug.Log($"[OrderProcessor] Debuff atualizado: {(newDebuff != null ? newDebuff.Name : "null")}");
     }
 
     public Tab ProcessTab(Tab originalTab)
     {
+        Debug.Log($"[OrderProcessor] ProcessTab chamado. currentActiveDebuff = {(currentActiveDebuff != null ? currentActiveDebuff.Name : "null")}");
+
+        if (factoryTab == null)
+        {
+            Debug.LogError("[OrderProcessor] factoryTab não está atribuído no Inspector!");
+            return originalTab;
+        }
+
+        Debug.Log($"[OrderProcessor] Ingredientes disponíveis - Comida: {factoryTab.foodIngredients.Count}, Bebida: {factoryTab.beverageIngredients.Count}");
+
         Tab processedTab = originalTab;
 
-        foreach (IOrderModifier modifier in modifiers)
+        if (currentActiveDebuff != null)
         {
-            processedTab = modifier.Modify(processedTab);
+            processedTab = currentActiveDebuff.ApplyDebuffToTab(processedTab, factoryTab.foodIngredients, factoryTab.beverageIngredients);
         }
-        processedTab.name = "fakeTab";
-        processedTab.isFake = true;
+
         return processedTab;
     }
 

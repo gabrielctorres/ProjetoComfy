@@ -19,34 +19,101 @@ public class WaiterSpawner : MonoBehaviour
     public int waitersPerDay = 3;
     private bool isCurrentOrderFinished = false;
 
+    public List<WaiterData> dailyWaitersQueue = new List<WaiterData>();
     private Waiter currentWaiter;
-
+    private OrderDebuff currentDebuffThisDay;
 
     public static event Action<Waiter> OnWaiterSpawned;
 
     private void OnEnable()
     {
         DayManager.OnDayStarted += HandleDayStarted;
+        DayManager.OnDebuffChanged += HandleDebuffChanged;
         OrderProcessor.OnOrderFinished += HandleOrderFinished;
-
         PlayerDoubt.OnDoubtSubmitted += EvaluatePlayerDoubts;
     }
 
     private void OnDisable()
     {
         DayManager.OnDayStarted -= HandleDayStarted;
+        DayManager.OnDebuffChanged -= HandleDebuffChanged;
         OrderProcessor.OnOrderFinished -= HandleOrderFinished;
         PlayerDoubt.OnDoubtSubmitted -= EvaluatePlayerDoubts;
     }
 
     private void HandleDayStarted(int currentDay)
     {
+        GenerateDailyQueue();
         StartCoroutine(SpawnWaitersRoutine());
+    }
+
+    private void HandleDebuffChanged(OrderDebuff newDebuff)
+    {
+        currentDebuffThisDay = newDebuff;
     }
 
     private void HandleOrderFinished()
     {
         isCurrentOrderFinished = true;
+    }
+
+    private void GenerateDailyQueue()
+    {
+        dailyWaitersQueue.Clear();
+
+        int liarsCount = Mathf.CeilToInt(waitersPerDay * 0.5f);
+        int honestCount = waitersPerDay - liarsCount;
+
+        TabRules rulesToApply = factoryTab.DefaultRules;
+        if (currentDebuffThisDay != null)
+        {
+            rulesToApply = currentDebuffThisDay.ModifySpawnRules(rulesToApply);
+        }
+
+        for (int i = 0; i < liarsCount; i++)
+        {
+            Tab baseTab = null;
+            Tab modifiedTab = null;
+            int safetyCounter = 0;
+            const int maxAttempts = 15;
+
+            do
+            {
+                baseTab = factoryTab.CreateTab(rulesToApply);
+                modifiedTab = orderProcessor.ProcessTab(baseTab);
+                safetyCounter++;
+
+            } while (modifiedTab == baseTab && safetyCounter < maxAttempts);
+
+
+            WaiterData liarWaiter = new WaiterData();
+            liarWaiter.originalTab = baseTab;
+            liarWaiter.fakeTab = modifiedTab;
+
+            liarWaiter.isLiar = (modifiedTab != baseTab);
+
+            dailyWaitersQueue.Add(liarWaiter);
+        }
+
+        for (int i = 0; i < honestCount; i++)
+        {
+            Tab baseTab = factoryTab.CreateTab(rulesToApply);
+
+            WaiterData honestWaiter = new WaiterData();
+            honestWaiter.originalTab = baseTab;
+            honestWaiter.fakeTab = baseTab;
+            honestWaiter.isLiar = false;
+
+            dailyWaitersQueue.Add(honestWaiter);
+        }
+
+        for (int i = dailyWaitersQueue.Count - 1; i > 0; i--)
+        {
+            int rnd = UnityEngine.Random.Range(0, i + 1);
+            WaiterData temp = dailyWaitersQueue[i];
+            dailyWaitersQueue[i] = dailyWaitersQueue[rnd];
+            dailyWaitersQueue[rnd] = temp;
+        }
     }
 
     private IEnumerator SpawnWaitersRoutine()
@@ -57,7 +124,8 @@ public class WaiterSpawner : MonoBehaviour
         {
             isCurrentOrderFinished = false;
 
-            CreatWaiter();
+
+            CreatWaiter(i);
 
             yield return new WaitUntil(() => isCurrentOrderFinished);
 
@@ -68,17 +136,19 @@ public class WaiterSpawner : MonoBehaviour
         }
     }
 
-    public void CreatWaiter()
+    public void CreatWaiter(int currentWaiterIndex)
     {
-        if (currentWaiter != null)
-        {
-            Destroy(currentWaiter.gameObject);
-        }
+        if (currentWaiter != null) Destroy(currentWaiter.gameObject);
+        if (currentWaiterIndex >= dailyWaitersQueue.Count) return;
 
-        Tab newTab = factoryTab.CreateTab();
+        WaiterData currentData = dailyWaitersQueue[currentWaiterIndex];
+
         currentWaiter = Instantiate(waiterPrefab, spawnPoint.position, spawnPoint.rotation).GetComponent<Waiter>();
-        currentWaiter.originalTab = newTab;
-        currentWaiter.fakeTab = ApplyModifierTab(newTab);
+
+        currentWaiter.originalTab = currentData.originalTab;
+        currentWaiter.fakeTab = currentData.fakeTab;
+        currentWaiter.isLiar = currentData.isLiar;
+
         SpriteRenderer spriteRenderer = currentWaiter.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
@@ -86,12 +156,6 @@ public class WaiterSpawner : MonoBehaviour
         }
 
         OnWaiterSpawned?.Invoke(currentWaiter);
-    }
-    public Tab ApplyModifierTab(Tab originalTab)
-    {
-        Tab tabAux = originalTab;
-        orderProcessor.AddModifier(new ChangeQuantityModifier());
-        return orderProcessor.ProcessTab(tabAux);
     }
 
     private void EvaluatePlayerDoubts(List<string> submittedDoubts)
@@ -125,6 +189,7 @@ public class WaiterSpawner : MonoBehaviour
                 playerWasRight = true;
             }
         }
+
         if (playerWasRight)
         {
             OnTabRefreshed?.Invoke();

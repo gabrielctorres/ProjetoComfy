@@ -26,9 +26,11 @@ public class Waiter : MonoBehaviour
         TabInteract interact = currentTabInstance.GetComponent<TabInteract>();
         if (interact != null)
         {
-            interact.tabData = fakeTab;
+            interact.fakeTab = fakeTab;
+            interact.originalTab = originalTab;
         }
     }
+
     public void DestroyTab()
     {
         if (currentTabInstance != null)
@@ -36,8 +38,16 @@ public class Waiter : MonoBehaviour
             Destroy(currentTabInstance);
         }
     }
+
     private void OnDestroy()
     {
         DestroyTab();
     }
+}
+[System.Serializable]
+public class WaiterData
+{
+    public Tab originalTab;
+    public Tab fakeTab;
+    public bool isLiar;
 }

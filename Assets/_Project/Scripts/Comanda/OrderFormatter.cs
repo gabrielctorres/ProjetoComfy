@@ -4,67 +4,123 @@ using UnityEngine;
 
 public class OrderFormatter : MonoBehaviour
 {
-    // Passamos o índice do pedido (orderIdx) para gerar links exclusivos por linha
-    public string FormatOrder(Order order, int orderIdx)
+    public string FormatOrder(Order fakeOrder, int orderIdx, Tab originalTab, Tab fakeTab)
     {
         StringBuilder sb = new StringBuilder();
 
-        if (order.ingredientes == null || order.ingredientes.Count == 0)
+        if (fakeOrder.ingredientes == null || fakeOrder.ingredientes.Count == 0)
             return sb.ToString();
 
+        bool isRealTab = (originalTab == fakeTab);
+
+        bool isQtyWrong = false;
+        if (originalTab != null && orderIdx < originalTab.pedidos.Count)
+        {
+            Order originalOrder = originalTab.pedidos[orderIdx];
+            isQtyWrong = fakeOrder.quantity != originalOrder.quantity;
+        }
+
+        bool underlineQty = isQtyWrong;
+
+        List<bool> underlineIng = new List<bool>();
+        for (int i = 0; i < fakeOrder.ingredientes.Count; i++)
+        {
+            underlineIng.Add(true);
+        }
+
+        Random.State oldState = Random.state;
+        Random.InitState(fakeTab.GetInstanceID() + orderIdx);
+
+        if (isRealTab)
+        {
+            if (Random.value < 0.35f) underlineQty = true;
+        }
+        else
+        {
+            if (!isQtyWrong && Random.value < 0.25f) underlineQty = true;
+        }
+
+        Random.state = oldState;
+
+
         string qtyLinkId = $"qty_{orderIdx}";
-        sb.Append($"<link=\"{qtyLinkId}\">{order.quantity}x</link> ");
+        string qtyText = $"{fakeOrder.quantity}x";
+        if (underlineQty) qtyText = $"<u>{qtyText}</u>";
 
-        string ingLinkId = $"ing_{orderIdx}";
-        sb.Append($"<link=\"{ingLinkId}\">");
+        sb.Append($"<link=\"{qtyLinkId}\">{qtyText}</link> ");
 
-        Ingredient baseIng = order.ingredientes[0];
+        Ingredient baseIng = fakeOrder.ingredientes[0];
 
         if (baseIng is Food f)
         {
             if (f.category == FoodCategory.Sanduiche)
             {
-                sb.Append("Sanduíche de " + f.ingredientName);
-                if (order.ingredientes.Count > 1) sb.Append(" com " + order.ingredientes[1].ingredientName);
+                sb.Append("Sanduíche de ");
+                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
+
+                if (fakeOrder.ingredientes.Count > 1)
+                {
+                    sb.Append(" com ");
+                    AppendIngredientLink(sb, orderIdx, 1, fakeOrder.ingredientes[1].ingredientName, underlineIng[1]);
+                }
             }
             else if (f.category == FoodCategory.Porcao)
             {
-                sb.Append("Porção de " + f.ingredientName);
-                if (order.ingredientes.Count > 1) sb.Append(" com " + order.ingredientes[1].ingredientName);
+                sb.Append("Porção de ");
+                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
+
+                if (fakeOrder.ingredientes.Count > 1)
+                {
+                    sb.Append(" com ");
+                    AppendIngredientLink(sb, orderIdx, 1, fakeOrder.ingredientes[1].ingredientName, underlineIng[1]);
+                }
             }
             else
             {
-                sb.Append(f.ingredientName);
+                AppendIngredientLink(sb, orderIdx, 0, f.ingredientName, underlineIng[0]);
             }
         }
         else if (baseIng is Beverage b)
         {
             if (b.category == BeverageCategory.Juice)
             {
-                sb.Append("Suco com Agua");
-                foreach (Ingredient ing in order.ingredientes) sb.Append(", " + ing.ingredientName);
+                sb.Append($"{b.category.ToString()} de ");
+                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
+
+                for (int i = 1; i < fakeOrder.ingredientes.Count; i++)
+                {
+                    sb.Append(", ");
+                    AppendIngredientLink(sb, orderIdx, i, fakeOrder.ingredientes[i].ingredientName, underlineIng[i]);
+                }
             }
             else if (b.category == BeverageCategory.Drink)
             {
-                sb.Append($"Drink com {b.ingredientName} [{b.strength}]");
-                for (int i = 1; i < order.ingredientes.Count; i++)
+                sb.Append("Drink de ");
+                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
+                sb.Append($" [{b.strength}]");
+
+                for (int i = 1; i < fakeOrder.ingredientes.Count; i++)
                 {
-                    sb.Append(i == order.ingredientes.Count - 1 ? " e " : ", ");
-                    sb.Append(order.ingredientes[i].ingredientName);
+                    sb.Append(i == fakeOrder.ingredientes.Count - 1 ? " e " : ", ");
+                    AppendIngredientLink(sb, orderIdx, i, fakeOrder.ingredientes[i].ingredientName, underlineIng[i]);
                 }
             }
             else
             {
-                sb.Append(b.ingredientName);
+                AppendIngredientLink(sb, orderIdx, 0, b.ingredientName, underlineIng[0]);
             }
         }
         else
         {
-            sb.Append(baseIng.ingredientName);
+            AppendIngredientLink(sb, orderIdx, 0, baseIng.ingredientName, underlineIng[0]);
         }
 
-        sb.Append("</link>");
-
         return sb.ToString();
+    }
+
+    private void AppendIngredientLink(StringBuilder sb, int orderIdx, int ingIdx, string ingredientName, bool underline)
+    {
+        string text = underline ? $"<u>{ingredientName}</u>" : ingredientName;
+        sb.Append($"<link=\"ing_{orderIdx}_{ingIdx}\">{text}</link>");
     }
 }
