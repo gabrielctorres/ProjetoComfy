@@ -7,19 +7,22 @@ using UnityEngine.UI;
 
 public class IngredientHolder : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
 
 
     public IngredientContainer ingredientContainer;
     public Image img;
 
-    
 
 
-    private void OnEnable() {
+
+    private void OnEnable()
+    {
         ingredientContainer.RegisterListener(this);
+        UpdateQuantity(ingredientContainer.ingredients.Count, ingredientContainer.maxIngredients);
+
     }
-    private void OnDisable() {
+    private void OnDisable()
+    {
         ingredientContainer.UnregisterListener(this);
     }
 
@@ -35,7 +38,8 @@ public class IngredientHolder : MonoBehaviour
 
     public void UpdateQuantity(int quantidade, int limite)
     {
-        if (img == null) {
+        if (img == null)
+        {
             Transform filho = transform.Find("FillImage");
             if (filho != null)
             {
@@ -49,6 +53,6 @@ public class IngredientHolder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
