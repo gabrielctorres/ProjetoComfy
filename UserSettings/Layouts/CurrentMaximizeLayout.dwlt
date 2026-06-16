@@ -20,7 +20,7 @@ MonoBehaviour:
     x: 0
     y: 36
     width: 1920
-    height: 933
+    height: 941
   m_MinSize: {x: 300, y: 112}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
@@ -1116,6 +1116,8 @@ MonoBehaviour:
       m_LastClickedID:
         m_Data: 0
       m_ExpandedIDs:
+      - m_Data: -3832
+      - m_Data: -2928
       - m_Data: -1382
       - m_Data: 51624
       m_RenameOverlay:
@@ -1232,7 +1234,7 @@ MonoBehaviour:
   m_LastFolders:
   - Assets/_Project/Scripts/Character
   m_LastFoldersGridSize: 16
-  m_LastProjectPath: C:\Users\gabri\MeusProjetos\ProjetoComfy
+  m_LastProjectPath: C:\Users\Killuado\Documents\GitHub\Unity\ProjetoComfy
   m_LockTracker:
     m_IsLocked: 0
   m_LastLocalAssetsSearchArea: 1
@@ -1250,6 +1252,7 @@ MonoBehaviour:
     - m_Data: 52038
     - m_Data: 52138
     - m_Data: 1000000000
+    - m_Data: 2147483647
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1288,6 +1291,7 @@ MonoBehaviour:
     - m_Data: 52036
     - m_Data: 52038
     - m_Data: 1000000000
+    - m_Data: 2147483647
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
