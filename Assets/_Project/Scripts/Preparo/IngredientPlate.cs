@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "NewCup", menuName = "ScriptableObjects/IngredientCup")]
-public class IngredientCup : IngredientContainer
+[CreateAssetMenu(fileName = "NewPlate", menuName = "ScriptableObjects/IngredientPlate")]
+public class IngredientPlate : IngredientContainer
 {
 
     public List<IngredientHolder> listeners;
@@ -20,13 +20,13 @@ public class IngredientCup : IngredientContainer
     public override void AddIngredient(Ingredient _ing)
     {
         if (!ingredients.Contains(_ing))
-        { 
+        {
             ingredients.Add(_ing);
             Signal();
         }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    
     public override void ClearIngredients()
     {
         ingredients.Clear();

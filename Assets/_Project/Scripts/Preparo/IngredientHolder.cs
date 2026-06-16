@@ -9,17 +9,23 @@ public class IngredientHolder : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    
-    public IngredientCup ingredientCup;
+
+    public IngredientContainer ingredientContainer;
     public Image img;
 
+    
 
-    private void OnEnable() { ingredientCup.RegisterListener(this); }
-    private void OnDisable() { ingredientCup.UnregisterListener(this); }
+
+    private void OnEnable() {
+        ingredientContainer.RegisterListener(this);
+    }
+    private void OnDisable() {
+        ingredientContainer.UnregisterListener(this);
+    }
 
     void Start()
     {
-        ingredientCup.ClearIngredients();
+        ingredientContainer.ClearIngredients();
         Transform filho = transform.Find("FillImage");
         if (filho != null)
         {
