@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using DG.Tweening; // Importante para o DOTween
 
 public class Waiter : MonoBehaviour
 {
@@ -26,9 +27,26 @@ public class Waiter : MonoBehaviour
         TabInteract interact = currentTabInstance.GetComponent<TabInteract>();
         if (interact != null)
         {
-            interact.fakeTab = fakeTab;
-            interact.originalTab = originalTab;
+            interact.fakeTab = fakeTab; interact.originalTab = originalTab;
         }
+
+        currentTabInstance.transform.localScale = Vector3.zero;
+        currentTabInstance.transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutQuad);
+    }
+
+
+    public void AnimateExitAndDestroy()
+    {
+        if (currentTabInstance != null)
+        {
+            currentTabInstance.transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack);
+        }
+
+        transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack);
+        transform.DOMoveY(transform.position.y - 0.5f, 0.25f).SetEase(Ease.InQuad).OnComplete(() =>
+        {
+            Destroy(gameObject);
+        });
     }
 
     public void DestroyTab()
@@ -41,6 +59,9 @@ public class Waiter : MonoBehaviour
 
     private void OnDestroy()
     {
+        transform.DOKill();
+        if (currentTabInstance != null) currentTabInstance.transform.DOKill();
+
         DestroyTab();
     }
 }

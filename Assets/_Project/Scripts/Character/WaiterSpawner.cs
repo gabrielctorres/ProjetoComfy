@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening; // Importante para o DOTween
 
 public class WaiterSpawner : MonoBehaviour
 {
@@ -85,11 +86,9 @@ public class WaiterSpawner : MonoBehaviour
 
             } while (modifiedTab == baseTab && safetyCounter < maxAttempts);
 
-
             WaiterData liarWaiter = new WaiterData();
             liarWaiter.originalTab = baseTab;
             liarWaiter.fakeTab = modifiedTab;
-
             liarWaiter.isLiar = (modifiedTab != baseTab);
 
             dailyWaitersQueue.Add(liarWaiter);
@@ -124,7 +123,6 @@ public class WaiterSpawner : MonoBehaviour
         {
             isCurrentOrderFinished = false;
 
-
             CreatWaiter(i);
 
             yield return new WaitUntil(() => isCurrentOrderFinished);
@@ -138,12 +136,17 @@ public class WaiterSpawner : MonoBehaviour
 
     public void CreatWaiter(int currentWaiterIndex)
     {
-        if (currentWaiter != null) Destroy(currentWaiter.gameObject);
         if (currentWaiterIndex >= dailyWaitersQueue.Count) return;
+
+        if (currentWaiter != null)
+        {
+            currentWaiter.AnimateExitAndDestroy();
+        }
 
         WaiterData currentData = dailyWaitersQueue[currentWaiterIndex];
 
-        currentWaiter = Instantiate(waiterPrefab, spawnPoint.position, spawnPoint.rotation).GetComponent<Waiter>();
+        GameObject waiterObj = Instantiate(waiterPrefab, spawnPoint.position, spawnPoint.rotation);
+        currentWaiter = waiterObj.GetComponent<Waiter>();
 
         currentWaiter.originalTab = currentData.originalTab;
         currentWaiter.fakeTab = currentData.fakeTab;
@@ -154,6 +157,14 @@ public class WaiterSpawner : MonoBehaviour
         {
             spriteRenderer.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         }
+
+
+        Vector3 originalScale = waiterObj.transform.localScale;
+        waiterObj.transform.localScale = Vector3.zero;
+
+        Sequence entrySequence = DOTween.Sequence();
+        entrySequence.Append(waiterObj.transform.DOScale(originalScale, 0.3f).SetEase(Ease.OutBack));
+        entrySequence.Append(waiterObj.transform.DOShakePosition(0.2f, 0.1f, 1));
 
         OnWaiterSpawned?.Invoke(currentWaiter);
     }

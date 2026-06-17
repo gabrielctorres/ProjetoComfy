@@ -10,7 +10,7 @@ public class IngredientButton : MonoBehaviour
     PreparoSystem PreparoManager;
     void Start()
     {
-        PreparoManager = GetComponentInParent<PreparoSystem>();
+        PreparoManager = PreparoSystem.Instance;
     }
 
     public void Init(Ingredient _ing)
@@ -34,7 +34,9 @@ public class IngredientButton : MonoBehaviour
             _ingHolderContainer = _ingredientHolder.ingredientContainer;
             Debug.Log(_ingHolderContainer);
             if (janela.busy || _ingredientHolder == null || _ingHolderContainer.ingredients.Count >= _ingHolderContainer.maxIngredients) { return; }
-        } else {
+        }
+        else
+        {
             //Debug.Log("ué deu trygetcomponent como false?");
             return;
         }
