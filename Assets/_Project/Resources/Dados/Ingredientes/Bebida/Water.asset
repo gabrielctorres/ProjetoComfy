@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Beverage
   ingredientName: Water
   icon: {fileID: 21300000, guid: 1c450bec096c5784eab5a0c19e8970d7, type: 3}
+  dragIcon: {fileID: 21300000, guid: 1c450bec096c5784eab5a0c19e8970d7, type: 3}
   type: 1
-  friedVersion: {fileID: 0}
   isVegan: 0
   category: 0
   strength: 0
