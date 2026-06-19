@@ -15,6 +15,7 @@ public class PlayerDoubt : MonoBehaviour
     public static event Action<List<string>> OnDoubtSubmitted;
 
     private bool isLocked = false;
+    private string originalFormattedText = "";
 
     public void OnEnable()
     {
@@ -33,20 +34,59 @@ public class PlayerDoubt : MonoBehaviour
         doubtText.text = $"{doubts.Count}/{douptMax}";
     }
 
+    public void SetNewTabText(string formattedText)
+    {
+        originalFormattedText = formattedText;
+        tabText.text = formattedText;
+    }
+
     public void AddDoubt(string id, string linkText)
     {
-        if (isLocked || doubts.Count >= douptMax) return;
+        if (isLocked) return;
 
-        if (!doubts.Contains(id))
+        if (string.IsNullOrEmpty(originalFormattedText) && tabText != null)
         {
-            doubts.Add(id);
-            ApplyRichStyle(id, "mark=#eb3434");
+            originalFormattedText = tabText.text;
+        }
+
+        if (doubts.Contains(id))
+        {
+            doubts.Remove(id);
         }
         else
         {
-            doubts.Remove(id);
-            RemoveRichStyle(id);
+            if (doubts.Count >= douptMax)
+            {
+                doubts.RemoveAt(0);
+            }
+
+            doubts.Add(id);
         }
+
+        RenderDoubts();
+    }
+
+    private void RenderDoubts()
+    {
+        if (string.IsNullOrEmpty(originalFormattedText)) return;
+
+        string textWithStyles = originalFormattedText;
+
+        foreach (string id in doubts)
+        {
+            string pattern = @"<link=""" + Regex.Escape(id) + @""">(.*?)</link>";
+
+            if (Regex.IsMatch(textWithStyles, pattern))
+            {
+                textWithStyles = Regex.Replace(textWithStyles, pattern, match =>
+                {
+                    string textoInterno = match.Groups[1].Value;
+                    return $"<link=\"{id}\"><mark=#eb3434>{textoInterno}</mark></link>";
+                });
+            }
+        }
+
+        tabText.text = textWithStyles;
     }
 
     public void SubmitDoubts()
@@ -61,41 +101,10 @@ public class PlayerDoubt : MonoBehaviour
     {
         doubts.Clear();
         isLocked = false;
-    }
 
-    public void ApplyRichStyle(string linkID, string innerStyle)
-    {
-        string textoOriginal = tabText.text;
-
-        string pattern = @"<link=""" + Regex.Escape(linkID) + @""">(.*?)</link>";
-
-        if (Regex.IsMatch(textoOriginal, pattern))
+        if (!string.IsNullOrEmpty(originalFormattedText))
         {
-            tabText.text = Regex.Replace(textoOriginal, pattern, match =>
-            {
-                string textoInterno = match.Groups[1].Value;
-
-                return $"<link=\"{linkID}\"><{innerStyle}>{textoInterno}</{innerStyle}></link>";
-            });
-        }
-    }
-
-    public void RemoveRichStyle(string linkID)
-    {
-        string textoOriginal = tabText.text;
-
-        string pattern = @"<link=""" + Regex.Escape(linkID) + @""">(.*?)</link>";
-
-        if (Regex.IsMatch(textoOriginal, pattern))
-        {
-            tabText.text = Regex.Replace(textoOriginal, pattern, match =>
-            {
-                string textoInterno = match.Groups[1].Value;
-
-                string limpo = Regex.Replace(textoInterno, @"<mark=[^>]*>(.*?)</mark>", "$1");
-
-                return $"<link=\"{linkID}\">{limpo}</link>";
-            });
+            tabText.text = originalFormattedText;
         }
     }
 }

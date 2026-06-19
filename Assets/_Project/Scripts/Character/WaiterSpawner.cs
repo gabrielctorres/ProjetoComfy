@@ -189,7 +189,6 @@ public class WaiterSpawner : MonoBehaviour
             }
         }
 
-        // --- DISPARO DO EVENTO DE FILA ENCERRADA ---
         Debug.Log("Fila de garçons esgotada. Disparando OnQueueEnded.");
         OnQueueEnded?.Invoke();
     }

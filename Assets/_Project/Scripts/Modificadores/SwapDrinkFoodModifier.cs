@@ -20,7 +20,6 @@ public class SwapDrinkFoodModifier : OrderDebuff
             drinkOnlyChance: 0.1f,
             mixedChance: 0.8f,
             sidelessChance: 0.05f,
-            extraSideChance: 0f,
             varySideCategory: true
         );
     }

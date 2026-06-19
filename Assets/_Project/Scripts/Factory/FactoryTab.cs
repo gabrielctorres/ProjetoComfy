@@ -9,9 +9,9 @@ public class FactoryTab : MonoBehaviour
     public List<Beverage> beverageIngredients;
 
     [Header("Configurações Padrão de Spawn")]
-    [SerializeField] private int minOrders = 1;
-    [SerializeField] private int maxOrders = 2;
-    [SerializeField] private int maxQuantity = 1;
+    private int minOrders = 1;
+    private int maxOrders = 2;
+    private int maxQuantity = 1;
 
     private TabRules defaultRules;
     public TabRules DefaultRules => defaultRules;
@@ -101,15 +101,7 @@ public class FactoryTab : MonoBehaviour
 
             if (acompanhamento != null) list.Add(acompanhamento);
 
-            if (acompanhamento != null && UnityEngine.Random.value < rules.extraSideChance)
-            {
-                var segundo = GetFoodWithVeganFallback(
-                    f => f.type.HasFlag(IngredientFlags.Acompanhamento) && f.category != FoodCategory.Fruta
-                         && f != acompanhamento,
-                    isVegan);
 
-                if (segundo != null) list.Add(segundo);
-            }
         }
     }
 
@@ -130,14 +122,6 @@ public class FactoryTab : MonoBehaviour
                 f => f.category == FoodCategory.Fruta, isVegan);
 
             if (fruta != null) list.Add(fruta);
-
-            if (fruta != null && UnityEngine.Random.value < rules.extraSideChance)
-            {
-                var segundaFruta = GetFoodWithVeganFallback(
-                    f => f.category == FoodCategory.Fruta && f != fruta, isVegan);
-
-                if (segundaFruta != null) list.Add(segundaFruta);
-            }
         }
     }
 
