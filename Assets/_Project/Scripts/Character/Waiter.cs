@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
-using DG.Tweening; // Importante para o DOTween
+using DG.Tweening;
+using Random = UnityEngine.Random; // Importante para o DOTween
 
 public class Waiter : MonoBehaviour
 {
@@ -15,6 +16,12 @@ public class Waiter : MonoBehaviour
 
     void Start()
     {
+        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.flipX = Random.value < 0.5f;
+        }
         prefabTab = GameManager.Instance.tabPrefab;
         spawnPoint = GameManager.Instance.tabPoint;
         SpawnTab();

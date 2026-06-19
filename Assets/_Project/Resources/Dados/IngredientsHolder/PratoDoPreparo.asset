@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2255932cc8cd6874990f8e81be9ddbf3, type: 3}
   m_Name: PratoDoPreparo
   m_EditorClassIdentifier: Assembly-CSharp::IngredientPlate
+  ingredients:
+  - {fileID: 11400000, guid: 65f70ede9c818164cb1cef4ae4d52d34, type: 2}
   maxIngredients: 3
-  ingredients: []
-  listeners: []

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -17,6 +16,7 @@ public class IngredientsNode : MonoBehaviour
         {
             GameObject _prefab = Instantiate(ingredientPrefab, container);
             _prefab.GetComponent<IngredientButton>().Init(allIngredients[i]);
+            _prefab.GetComponent<UnityEngine.UI.Image>().sprite = allIngredients[i].icon;
         }
 
         gameObject.SetActive(false);

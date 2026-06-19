@@ -12,7 +12,6 @@ public abstract class IngredientContainer : ScriptableObject
 
     public abstract void AddIngredient(Ingredient ingredient);
 
-    // Agora aceitam a interface genérica
     public abstract void RegisterListener(IIngredientListener listener);
     public abstract void UnregisterListener(IIngredientListener listener);
 

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc762171ce8ab44f81a00daa026860c, type: 3}
+  m_Name: Juice_LemonMilk
+  m_EditorClassIdentifier: Assembly-CSharp::DrinkRecipe
+  recipeName: LaranjaLeite
+  requiredIngredients:
+  - {fileID: 11400000, guid: 6814a080b40937b47819b2fdbf808c8b, type: 2}
+  - {fileID: 11400000, guid: 3d5d384ff0cdee8429e7de8654057d11, type: 2}
+  resultSprite: {fileID: 21300000, guid: 511bd18a28b80dc4789b33d5434bc975, type: 3}

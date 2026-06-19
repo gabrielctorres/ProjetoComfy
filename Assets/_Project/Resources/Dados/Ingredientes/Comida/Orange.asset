@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Orange
   m_EditorClassIdentifier: Assembly-CSharp::Food
   ingredientName: Orange
+  icon: {fileID: 21300000, guid: d8aca4567767c2248974723c9f1a579b, type: 3}
+  dragIcon: {fileID: 21300000, guid: 8aca1165112d71e40b4e9fd6496ccae7, type: 3}
   type: 2
   isVegan: 0
   category: 2

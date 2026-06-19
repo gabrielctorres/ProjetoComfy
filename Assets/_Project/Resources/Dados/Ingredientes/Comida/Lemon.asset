@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Lemon
   m_EditorClassIdentifier: Assembly-CSharp::Food
   ingredientName: Lemon
+  icon: {fileID: 21300000, guid: cc4ae2e3594454346b247e4ddfd0e2ef, type: 3}
+  dragIcon: {fileID: 21300000, guid: f487ecda152359c4cbfec9e599655a0c, type: 3}
   type: 2
   isVegan: 0
   category: 2

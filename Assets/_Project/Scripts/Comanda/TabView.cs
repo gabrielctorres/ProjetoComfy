@@ -57,9 +57,6 @@ public class TabView : MonoBehaviour
     public void CloseTab()
     {
         containerTab.SetActive(false);
-        textTab.text = "";
-        fakeTab = null;
-        originalTab = null;
         isOpen = false;
     }
 }

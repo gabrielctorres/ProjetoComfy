@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Milk
   m_EditorClassIdentifier: Assembly-CSharp::Beverage
   ingredientName: Milk
+  icon: {fileID: 21300000, guid: 46d83fd6763a95240b17f9fb8e3ba291, type: 3}
   type: 1
+  friedVersion: {fileID: 0}
   isVegan: 0
   category: 0
   strength: 0

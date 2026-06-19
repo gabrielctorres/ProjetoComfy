@@ -1,25 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "DrinkRecipe", menuName = "ScriptableObjects/DrinkRecipe")]
+[CreateAssetMenu(fileName = "NewRecipe", menuName = "ScriptableObjects/Recipe")]
 public class DrinkRecipe : ScriptableObject
 {
     public string recipeName;
-    public Sprite resultSprite; // O sprite que você quer mostrar
+    public List<Ingredient> requiredIngredients;
+    public Sprite resultSprite;
 
-    [Header("Combinação Necessária")]
-    public Ingredient baseIngredient;
-    public Ingredient fruitIngredient;
-    public Ingredient sideIngredient; // Acompanhamento
-
-    // Função que checa se a lista de ingredientes atual bate com essa receita
-    public bool Matches(List<Ingredient> currentIngredients)
+    public bool Matches(List<Ingredient> ingredientsInCup)
     {
-        if (currentIngredients.Count != 3) return false;
+        if (ingredientsInCup.Count != requiredIngredients.Count) return false;
 
-        // Verifica se todos os ingredientes necessários estão na lista atual
-        return currentIngredients.Contains(baseIngredient) &&
-               currentIngredients.Contains(fruitIngredient) &&
-               currentIngredients.Contains(sideIngredient);
+        List<Ingredient> checkList = new List<Ingredient>(ingredientsInCup);
+
+        foreach (var reqIng in requiredIngredients)
+        {
+            if (checkList.Contains(reqIng))
+            {
+                checkList.Remove(reqIng);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

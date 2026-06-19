@@ -1,19 +1,27 @@
 using UnityEngine;
-using DG.Tweening; // Obrigatório para usar o DOTween
+using DG.Tweening;
 
 public class SelectedObject : MonoBehaviour
 {
+    [Header("Configurações do Menu")]
     public GameObject toggledMenu;
     public bool ExclusiveWindow = true;
+    public bool canToggleMenu = true;
 
+    [Header("Fluxo de Navegação Avançado")]
+    [Tooltip("Se configurado, este objeto será DESATIVADO (fechado) ao clicar.")]
+    public GameObject objectToClose;
+
+    [Tooltip("Se configurado, este objeto será ATIVADO (aberto) ao clicar.")]
+    public GameObject objectToOpen;
 
     private Vector3 hoverScale = new Vector3(1.05f, 1.05f, 1.05f);
     private float hoverDuration = 0.2f;
-    private float clickPunchIntensity = 5f; // Rotação em graus
+    private float clickPunchIntensity = 5f;
     private float clickPunchDuration = 0.3f;
 
     private Vector3 originalScale;
-    private Tween hoverTween; // Armazena a animação atual para garantir fluidez
+    private Tween hoverTween;
 
     private PreparoSystem PreparoManager;
     private PreparoTab myTab;
@@ -22,8 +30,8 @@ public class SelectedObject : MonoBehaviour
     private Renderer myRenderer;
     private Material localMaterial;
 
-    private static readonly int LineXID = Shader.PropertyToID("_LineX");
-    private static readonly int LineYID = Shader.PropertyToID("_LineY");
+    private int LineXID = Shader.PropertyToID("_LineX");
+    private int LineYID = Shader.PropertyToID("_LineY");
 
     void Start()
     {
@@ -37,7 +45,6 @@ public class SelectedObject : MonoBehaviour
         }
 
         PreparoManager = PreparoSystem.Instance;
-
 
         if (toggledMenu && toggledMenu.TryGetComponent<PreparoTab>(out PreparoTab _MyTab))
         {
@@ -57,9 +64,7 @@ public class SelectedObject : MonoBehaviour
 
         if (hoverTween != null && hoverTween.IsActive()) hoverTween.Kill();
 
-        hoverTween = transform.DOScale(originalScale * 1.05f, hoverDuration)
-            .SetEase(Ease.OutQuad)
-            .OnComplete(() => transform.DOScale(originalScale, hoverDuration).SetEase(Ease.InOutQuad));
+        hoverTween = transform.DOScale(originalScale * 1.05f, hoverDuration).SetEase(Ease.OutQuad).OnComplete(() => transform.DOScale(originalScale, hoverDuration).SetEase(Ease.InOutQuad));
     }
 
     private void OnMouseExit()
@@ -78,32 +83,49 @@ public class SelectedObject : MonoBehaviour
 
     private void OnMouseDown()
     {
-        transform.DOPunchRotation(new Vector3(0, 0, clickPunchIntensity), clickPunchDuration, 10, 1)
-            .SetEase(Ease.OutQuad);
+        if (!canToggleMenu) return;
+
+        transform.DOPunchRotation(new Vector3(0, 0, clickPunchIntensity), clickPunchDuration, 10, 1).SetEase(Ease.OutQuad);
 
 
-        if (ExclusiveWindow)
+        if (objectToClose != null)
         {
-            if (PreparoManager && PreparoManager.activeWindow && PreparoManager.activeWindow != toggledMenu)
-            {
-                var activeTab = PreparoManager.activeWindow.GetComponent<PreparoTab>();
-                if (activeTab != null && activeTab.busy)
-                {
-                    return;
-                }
-                PreparoManager.activeWindow.SetActive(false);
-            }
-            if (PreparoManager) PreparoManager.activeWindow = toggledMenu;
+            objectToClose.SetActive(false);
         }
 
-        if (myTab && myTab.busy && toggledMenu.activeSelf) { return; }
-
-        if (toggledMenu)
+        if (objectToOpen != null)
         {
-            toggledMenu.SetActive(!toggledMenu.activeInHierarchy);
-            if (!toggledMenu.activeSelf && PreparoManager && PreparoManager.activeWindow == toggledMenu)
+            objectToOpen.SetActive(true);
+
+            if (ExclusiveWindow && PreparoManager)
             {
-                PreparoManager.activeWindow = null;
+                PreparoManager.activeWindow = objectToOpen;
+            }
+        }
+
+        if (objectToClose == null && objectToOpen == null)
+        {
+            if (ExclusiveWindow)
+            {
+                if (PreparoManager && PreparoManager.activeWindow && PreparoManager.activeWindow != toggledMenu)
+                {
+                    var activeTab = PreparoManager.activeWindow.GetComponent<PreparoTab>();
+                    if (activeTab != null && activeTab.busy) return;
+
+                    PreparoManager.activeWindow.SetActive(false);
+                }
+                if (PreparoManager) PreparoManager.activeWindow = toggledMenu;
+            }
+
+            if (myTab && myTab.busy && toggledMenu.activeSelf) { return; }
+
+            if (toggledMenu)
+            {
+                toggledMenu.SetActive(!toggledMenu.activeInHierarchy);
+                if (!toggledMenu.activeSelf && PreparoManager && PreparoManager.activeWindow == toggledMenu)
+                {
+                    PreparoManager.activeWindow = null;
+                }
             }
         }
     }
@@ -113,10 +135,6 @@ public class SelectedObject : MonoBehaviour
     private void OnDestroy()
     {
         transform.DOKill();
-
-        if (localMaterial != null)
-        {
-            Destroy(localMaterial);
-        }
+        if (localMaterial != null) Destroy(localMaterial);
     }
 }

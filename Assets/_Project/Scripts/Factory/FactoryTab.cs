@@ -10,8 +10,8 @@ public class FactoryTab : MonoBehaviour
 
     [Header("Configurações Padrão de Spawn")]
     [SerializeField] private int minOrders = 1;
-    [SerializeField] private int maxOrders = 4;
-    [SerializeField] private int maxQuantity = 3;
+    [SerializeField] private int maxOrders = 2;
+    [SerializeField] private int maxQuantity = 1;
 
     private TabRules defaultRules;
     public TabRules DefaultRules => defaultRules;
