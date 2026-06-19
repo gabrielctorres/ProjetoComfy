@@ -4868,6 +4868,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fcd19f1c3caaf294fad38a452e089f23, type: 2}
   - {fileID: 11400000, guid: ad4c4def544ee9047b376c1e620dd4a8, type: 2}
   - {fileID: 11400000, guid: 2a72fd9c81efd0b4ca10b9180638487b, type: 2}
+  - {fileID: 11400000, guid: bd22ef1ab0602f04882f0c6584980c66, type: 2}
   defaultSprite: {fileID: 21300000, guid: e08504990a28b0b41a3845c24650e2ad, type: 3}
 --- !u!1 &1596292369
 GameObject:

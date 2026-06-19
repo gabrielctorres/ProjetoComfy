@@ -1,11 +1,23 @@
 using System.Collections;
 using UnityEngine;
+using DG.Tweening; // Importado para usar o DOTween
 
 public class Squeezer : Tool
 {
     public IngredientContainer targetContainer;
     public float timeToSqueeze = 2f;
     private bool isBusy = false;
+
+    [Header("Animação e Efeitos")]
+    public float shakeStrength = 0.05f;
+    public int shakeVibrato = 10;
+    private Tween shakeTween;
+    private Vector3 originalPosition;
+
+    private void Awake()
+    {
+        originalPosition = transform.localPosition;
+    }
 
     protected override void OnMouseEnter()
     {
@@ -52,6 +64,8 @@ public class Squeezer : Tool
     {
         isBusy = true;
 
+        shakeTween = transform.DOShakePosition(timeToSqueeze, strength: shakeStrength, vibrato: shakeVibrato, randomness: 90, snapping: false, fadeOut: false);
+
         yield return new WaitForSeconds(timeToSqueeze);
 
         if (targetContainer != null)
@@ -60,6 +74,22 @@ public class Squeezer : Tool
             Debug.Log("Processo concluído e adicionado ao container!");
         }
 
+        StopShakeAnimation();
+
         isBusy = false;
+    }
+
+    private void StopShakeAnimation()
+    {
+        if (shakeTween != null && shakeTween.IsActive())
+        {
+            shakeTween.Kill();
+        }
+        transform.localPosition = originalPosition;
+    }
+
+    private void OnDisable()
+    {
+        StopShakeAnimation();
     }
 }

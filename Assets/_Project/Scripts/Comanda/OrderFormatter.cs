@@ -54,14 +54,13 @@ public class OrderFormatter : MonoBehaviour
         {
             if (f.category == FoodCategory.Sanduiche)
             {
-                // Em inglês: [Ingrediente] Sandwich (Ex: "Chicken Sandwich")
                 AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
                 sb.Append(" Sandwich");
 
                 if (fakeOrder.ingredientes.Count > 1)
                 {
                     sb.Append(" with ");
-                    AppendIngredientLink(sb, orderIdx, 1, fakeOrder.ingredientes[1].ingredientName, underlineIng[1]);
+                    AppendIngredientsList(sb, fakeOrder.ingredientes, orderIdx, underlineIng, 1);
                 }
             }
             else if (f.category == FoodCategory.Porcao)
@@ -72,7 +71,7 @@ public class OrderFormatter : MonoBehaviour
                 if (fakeOrder.ingredientes.Count > 1)
                 {
                     sb.Append(" with ");
-                    AppendIngredientLink(sb, orderIdx, 1, fakeOrder.ingredientes[1].ingredientName, underlineIng[1]);
+                    AppendIngredientsList(sb, fakeOrder.ingredientes, orderIdx, underlineIng, 1);
                 }
             }
             else
@@ -84,25 +83,26 @@ public class OrderFormatter : MonoBehaviour
         {
             if (b.category == BeverageCategory.Juice)
             {
+                // Formato: Orange Juice with Water
                 AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
                 sb.Append(" Juice");
 
-                for (int i = 1; i < fakeOrder.ingredientes.Count; i++)
+                if (fakeOrder.ingredientes.Count > 1)
                 {
-                    sb.Append(", ");
-                    AppendIngredientLink(sb, orderIdx, i, fakeOrder.ingredientes[i].ingredientName, underlineIng[i]);
+                    sb.Append(" with ");
+                    AppendIngredientsList(sb, fakeOrder.ingredientes, orderIdx, underlineIng, 1);
                 }
             }
             else if (b.category == BeverageCategory.Drink)
             {
-                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
-                sb.Append($" Drink [{b.strength}]");
-
-                for (int i = 1; i < fakeOrder.ingredientes.Count; i++)
+                if (fakeOrder.ingredientes.Count > 1)
                 {
-                    sb.Append(i == fakeOrder.ingredientes.Count - 1 ? " and " : ", ");
-                    AppendIngredientLink(sb, orderIdx, i, fakeOrder.ingredientes[i].ingredientName, underlineIng[i]);
+                    AppendIngredientsList(sb, fakeOrder.ingredientes, orderIdx, underlineIng, 1);
+                    sb.Append(" ");
                 }
+
+                AppendIngredientLink(sb, orderIdx, 0, fakeOrder.ingredientes[0].ingredientName, underlineIng[0]);
+                sb.Append(" Cocktail");
             }
             else
             {
@@ -121,5 +121,22 @@ public class OrderFormatter : MonoBehaviour
     {
         string text = underline ? $"<u>{ingredientName}</u>" : ingredientName;
         sb.Append($"<link=\"ing_{orderIdx}_{ingIdx}\">{text}</link>");
+    }
+
+    private void AppendIngredientsList(StringBuilder sb, List<Ingredient> ingredientes, int orderIdx, List<bool> underlineIng, int startIndex)
+    {
+        for (int i = startIndex; i < ingredientes.Count; i++)
+        {
+            AppendIngredientLink(sb, orderIdx, i, ingredientes[i].ingredientName, underlineIng[i]);
+
+            if (i == ingredientes.Count - 2)
+            {
+                sb.Append(" and ");
+            }
+            else if (i < ingredientes.Count - 2)
+            {
+                sb.Append(", ");
+            }
+        }
     }
 }
