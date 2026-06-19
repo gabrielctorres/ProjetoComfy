@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrinkRecipe
   recipeName: MelanciaWater
   requiredIngredients:
-  - {fileID: 11400000, guid: 6814a080b40937b47819b2fdbf808c8b, type: 2}
+  - {fileID: 11400000, guid: a0e6e7ed7a3afb447a8f2cbac95f2248, type: 2}
   - {fileID: 11400000, guid: 3d2bb2a2b0d37e441bfc9cefab6931f1, type: 2}
   resultSprite: {fileID: 21300000, guid: 4189a60d17a25ff4dacf83cb974dc57f, type: 3}
