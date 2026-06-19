@@ -18,23 +18,19 @@ public class FryingPan : Tool
 
     private Ingredient ingredientBeingFried;
 
-    // Variáveis para controlar o tempo real decorrido
     private float fryStartTime;
     private float fryProgress = 0f;
 
-    // Variáveis para controlar a animação via código
     private Tween shakeTween;
     private Vector3 originalPosition;
 
     private void Awake()
     {
-        // Salva a posição original para evitar que a panela mude de lugar após o shake
         originalPosition = transform.localPosition;
     }
 
     private void Update()
     {
-        // Se estiver fritando, atualiza o progresso com base no tempo do jogo
         if (currentState == PanState.Frying)
         {
             fryProgress = Time.time - fryStartTime;
@@ -48,7 +44,6 @@ public class FryingPan : Tool
 
     private void OnEnable()
     {
-        // Se ele foi desligado enquanto fritava, recalculamos o tempo para ver se já terminou
         if (currentState == PanState.Frying)
         {
             fryProgress = Time.time - fryStartTime;
@@ -59,10 +54,8 @@ public class FryingPan : Tool
             }
             else
             {
-                // Se ainda não terminou, mantém o visual ativo do item
                 UpdateVisuals(isFrying: true);
 
-                // Retoma as animações pelo tempo restante
                 StartFryingAnimations(fryingTime - fryProgress);
             }
         }
@@ -70,23 +63,18 @@ public class FryingPan : Tool
 
     private void OnDisable()
     {
-        // Garante que o Tween seja cancelado caso o objeto seja desativado enquanto frita
         StopFryingAnimations();
     }
 
-    // --- INTERAÇÃO COM O MOUSE (IGUAL AO SHAKER) ---
     protected override void OnMouseEnter()
     {
-        // Só aceita se a panela não estiver ocupada fritando e se houver um item sendo arrastado
         if (currentState == PanState.Frying || !DragManager.Instance.IsDragging()) return;
 
-        // Verifica se o container de destino tem espaço antes de aceitar
         if (targetContainer != null && targetContainer.ingredients.Count >= targetContainer.maxIngredients) return;
 
         Ingredient currentIngredient = DragManager.Instance.CurrentIngredient;
 
-        // Se quiser adicionar alguma validação extra de tipo no futuro (como o IsValidForShaker), pode colocar aqui.
-        // Por enquanto, aceita o ingrediente direto e executa:
+
         Execute(currentIngredient);
     }
 

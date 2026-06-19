@@ -51,22 +51,18 @@ public class PlayerDoubt : MonoBehaviour
 
         if (doubts.Contains(id))
         {
-            // Se já está selecionado, apenas remove
             doubts.Remove(id);
         }
         else
         {
-            // COMPORTAMENTO FILA: Se já tem 3 selecionados, remove o mais antigo (índice 0)
             if (doubts.Count >= douptMax)
             {
                 doubts.RemoveAt(0);
             }
 
-            // Adiciona o novo ingrediente no final da lista
             doubts.Add(id);
         }
 
-        // Atualiza visualmente aplicando as tags corretas
         RenderDoubts();
     }
 
@@ -74,10 +70,8 @@ public class PlayerDoubt : MonoBehaviour
     {
         if (string.IsNullOrEmpty(originalFormattedText)) return;
 
-        // Começa sempre a partir do texto original limpo (com u_line, sem mark)
         string textWithStyles = originalFormattedText;
 
-        // Aplica o <mark> apenas nos IDs que continuam na lista
         foreach (string id in doubts)
         {
             string pattern = @"<link=""" + Regex.Escape(id) + @""">(.*?)</link>";

@@ -479,7 +479,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0.5
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -4643,9 +4643,6 @@ MonoBehaviour:
   beverageIngredients:
   - {fileID: 11400000, guid: ca46b4ec883dad147ba5cc74622be784, type: 2}
   - {fileID: 11400000, guid: 3d2bb2a2b0d37e441bfc9cefab6931f1, type: 2}
-  minOrders: 1
-  maxOrders: 4
-  maxQuantity: 3
 --- !u!4 &1537950217
 Transform:
   m_ObjectHideFlags: 0
@@ -6328,7 +6325,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2109673255
 RectTransform:
   m_ObjectHideFlags: 0

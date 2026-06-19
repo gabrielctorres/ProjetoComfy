@@ -4,7 +4,7 @@ using UnityEngine;
 public class DayManager : MonoBehaviour
 {
     [Header("Configurações do Dia")]
-    [SerializeField] private int totalDays = 5;
+    [SerializeField] private int totalDays = 20;
     public float CurrentTimeInDay { get; private set; }
     public float CustomerSatisfaction { get; private set; } = 100f;
     public bool IsDayActive { get; private set; }
@@ -16,7 +16,6 @@ public class DayManager : MonoBehaviour
     public static event Action OnGameOver;
 
     public GameData gameData;
-
 
     private void OnEnable()
     {
@@ -30,25 +29,39 @@ public class DayManager : MonoBehaviour
 
     void Start()
     {
+
+        if (gameData != null && gameData.currenteDay <= 0)
+        {
+            gameData.currenteDay = 1;
+        }
+
         StartNewDay();
     }
+
     public void DisableUI(GameObject ui)
     {
         ui.SetActive(false);
         StartNewDay();
     }
+
     public void StartNewDay()
     {
-        if (gameData.currenteDay > totalDays) return;
+        if (gameData.currenteDay > totalDays)
+        {
+            Debug.Log("Fim do jogo! Você passou de todos os dias.");
+            return;
+        }
+
         gameData.point = 0;
         CurrentTimeInDay = 0f;
         IsDayActive = true;
 
         OrderDebuff activeDebuff = ChooseDebuffForCurrentDay();
 
-
         OnDebuffChanged?.Invoke(activeDebuff);
         OnDayStarted?.Invoke(gameData.currenteDay);
+
+        Debug.Log($"[DayManager] Iniciando Dia: {gameData.currenteDay}");
     }
 
     private OrderDebuff ChooseDebuffForCurrentDay()
@@ -70,7 +83,9 @@ public class DayManager : MonoBehaviour
         OnDebuffChanged?.Invoke(null);
 
         OnDayEnded?.Invoke();
+
         gameData.currenteDay++;
+        Debug.Log($"[DayManager] Dia Encerrado. Próximo dia será: {gameData.currenteDay}");
     }
 
     public void ModifySatisfaction(float amount)
