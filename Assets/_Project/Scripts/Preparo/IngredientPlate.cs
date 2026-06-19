@@ -1,19 +1,16 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 [CreateAssetMenu(fileName = "NewPlate", menuName = "ScriptableObjects/IngredientPlate")]
 public class IngredientPlate : IngredientContainer
 {
-
-    public List<IngredientHolder> listeners;
+    public List<IIngredientListener> listeners = new List<IIngredientListener>();
 
     void Signal()
     {
         for (int i = 0; i < listeners.Count; i++)
         {
-            listeners[i].UpdateQuantity(ingredients.Count, maxIngredients);
+            listeners[i].OnIngredientsChanged(ingredients, maxIngredients);
         }
     }
 
@@ -26,14 +23,12 @@ public class IngredientPlate : IngredientContainer
         }
     }
 
-    
     public override void ClearIngredients()
     {
         ingredients.Clear();
         Signal();
     }
 
-    public override void RegisterListener(IngredientHolder listener) { listeners.Add(listener); }
-    public override void UnregisterListener(IngredientHolder listener) { listeners.Remove(listener); }
-
+    public override void RegisterListener(IIngredientListener listener) { listeners.Add(listener); }
+    public override void UnregisterListener(IIngredientListener listener) { listeners.Remove(listener); }
 }

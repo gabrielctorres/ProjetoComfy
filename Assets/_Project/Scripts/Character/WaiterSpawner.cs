@@ -2,16 +2,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class WaiterSpawner : MonoBehaviour
 {
-    public GameObject waiterPrefab;
+    [Header("Configurações dos Garçons")]
+    public List<GameObject> waiterPrefabs = new List<GameObject>();
     public Transform spawnPoint;
+
+    [Header("Sistemas de Validação")]
+    public IngredientContainer squeezerContainer;
+    public IngredientContainer shakerContainer;
+    public IngredientContainer foodContainer;
+
+    [Header("Pontuação")]
+    public int scorePerCorrectItem = 10;
+    public GameData gameData;
 
     public FactoryTab factoryTab;
     public OrderProcessor orderProcessor;
 
     public static event Action OnTabRefreshed;
+
+    // --- NOVO EVENTO: A FILA DO DIA ACABOU ---
+    public static event Action OnQueueEnded;
 
     [Header("Configurações de Tempo")]
     public float initialDelay = 3f;
@@ -54,6 +68,49 @@ public class WaiterSpawner : MonoBehaviour
 
     private void HandleOrderFinished()
     {
+        if (currentWaiter == null || currentWaiter.originalTab == null)
+        {
+            isCurrentOrderFinished = true;
+            return;
+        }
+
+        Debug.Log("--- Iniciando checagem dos itens entregues ---");
+
+        List<Ingredient> preparedIngredients = new List<Ingredient>();
+
+        if (squeezerContainer != null) preparedIngredients.AddRange(squeezerContainer.ingredients);
+        if (shakerContainer != null) preparedIngredients.AddRange(shakerContainer.ingredients);
+        if (foodContainer != null) preparedIngredients.AddRange(foodContainer.ingredients);
+
+        List<Ingredient> requiredIngredients = new List<Ingredient>();
+        foreach (var pedido in currentWaiter.originalTab.pedidos)
+        {
+            for (int i = 0; i < pedido.quantity; i++)
+            {
+                requiredIngredients.AddRange(pedido.ingredientes);
+            }
+        }
+
+        int correctMatches = 0;
+        List<Ingredient> tempPrepared = new List<Ingredient>(preparedIngredients);
+
+        foreach (var reqIng in requiredIngredients)
+        {
+            if (tempPrepared.Contains(reqIng))
+            {
+                correctMatches++;
+                tempPrepared.Remove(reqIng);
+            }
+        }
+
+        int pointsGained = correctMatches * scorePerCorrectItem;
+        gameData.point += pointsGained;
+        Debug.Log($"Entrega concluída! Acertos: {correctMatches}/{requiredIngredients.Count}. Pontos Ganhos: {pointsGained}. Total: {gameData}");
+
+        if (squeezerContainer != null) squeezerContainer.ClearIngredients();
+        if (shakerContainer != null) shakerContainer.ClearIngredients();
+        if (foodContainer != null) foodContainer.ClearIngredients();
+
         isCurrentOrderFinished = true;
     }
 
@@ -85,11 +142,9 @@ public class WaiterSpawner : MonoBehaviour
 
             } while (modifiedTab == baseTab && safetyCounter < maxAttempts);
 
-
             WaiterData liarWaiter = new WaiterData();
             liarWaiter.originalTab = baseTab;
             liarWaiter.fakeTab = modifiedTab;
-
             liarWaiter.isLiar = (modifiedTab != baseTab);
 
             dailyWaitersQueue.Add(liarWaiter);
@@ -124,8 +179,7 @@ public class WaiterSpawner : MonoBehaviour
         {
             isCurrentOrderFinished = false;
 
-
-            CreatWaiter(i);
+            CreateWaiter(i);
 
             yield return new WaitUntil(() => isCurrentOrderFinished);
 
@@ -134,26 +188,45 @@ public class WaiterSpawner : MonoBehaviour
                 yield return new WaitForSeconds(delayBetweenWaiters);
             }
         }
+
+        // --- DISPARO DO EVENTO DE FILA ENCERRADA ---
+        Debug.Log("Fila de garçons esgotada. Disparando OnQueueEnded.");
+        OnQueueEnded?.Invoke();
     }
 
-    public void CreatWaiter(int currentWaiterIndex)
+    public void CreateWaiter(int currentWaiterIndex)
     {
-        if (currentWaiter != null) Destroy(currentWaiter.gameObject);
         if (currentWaiterIndex >= dailyWaitersQueue.Count) return;
+
+        if (waiterPrefabs == null || waiterPrefabs.Count == 0)
+        {
+            Debug.LogError("Nenhum Waiter Prefab associado na lista do WaiterSpawner!");
+            return;
+        }
+
+        if (currentWaiter != null)
+        {
+            currentWaiter.AnimateExitAndDestroy();
+        }
 
         WaiterData currentData = dailyWaitersQueue[currentWaiterIndex];
 
-        currentWaiter = Instantiate(waiterPrefab, spawnPoint.position, spawnPoint.rotation).GetComponent<Waiter>();
+        int randomPrefabIndex = UnityEngine.Random.Range(0, waiterPrefabs.Count);
+        GameObject chosenPrefab = waiterPrefabs[randomPrefabIndex];
+
+        GameObject waiterObj = Instantiate(chosenPrefab, spawnPoint.position, spawnPoint.rotation);
+        currentWaiter = waiterObj.GetComponent<Waiter>();
 
         currentWaiter.originalTab = currentData.originalTab;
         currentWaiter.fakeTab = currentData.fakeTab;
         currentWaiter.isLiar = currentData.isLiar;
 
-        SpriteRenderer spriteRenderer = currentWaiter.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
-        }
+        Vector3 originalScale = waiterObj.transform.localScale;
+        waiterObj.transform.localScale = Vector3.zero;
+
+        Sequence entrySequence = DOTween.Sequence();
+        entrySequence.Append(waiterObj.transform.DOScale(originalScale, 0.3f).SetEase(Ease.OutBack));
+        entrySequence.Append(waiterObj.transform.DOShakePosition(0.2f, 0.1f, 1));
 
         OnWaiterSpawned?.Invoke(currentWaiter);
     }

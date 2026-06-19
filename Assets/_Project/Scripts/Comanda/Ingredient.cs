@@ -12,6 +12,8 @@ public enum IngredientFlags
 public abstract class Ingredient : ScriptableObject
 {
     public string ingredientName;
+    public Sprite icon;
+    public Sprite dragIcon;
     public IngredientFlags type;
     public bool isVegan;
 }

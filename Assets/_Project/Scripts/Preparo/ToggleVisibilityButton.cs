@@ -10,22 +10,22 @@ public class ToggleVisibilityButton : MonoBehaviour
 
     PreparoTab myTab;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     void Start()
     {
-        PreparoManager = GetComponentInParent<PreparoSystem>();
+        PreparoManager = PreparoSystem.Instance;
         if (toggledMenu.TryGetComponent<PreparoTab>(out PreparoTab _MyTab))
-            { 
+        {
 
             myTab = _MyTab;
 
-            }
+        }
     }
 
     public void OnClick()
     {
-        if (ExclusiveWindow) { 
+        if (ExclusiveWindow)
+        {
             if (PreparoManager.activeWindow && PreparoManager.activeWindow != toggledMenu)
             {
                 if (PreparoManager.activeWindow.GetComponent<PreparoTab>().busy)

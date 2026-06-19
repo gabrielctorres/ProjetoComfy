@@ -6,7 +6,6 @@ public class TabView : MonoBehaviour
     public bool isOpen;
     public GameObject containerTab;
     public TextMeshProUGUI textTab;
-    public TextMeshProUGUI typeText;
     private OrderFormatter orderFormatter;
 
     private Tab fakeTab;
@@ -36,9 +35,6 @@ public class TabView : MonoBehaviour
 
         this.fakeTab = fakeTab;
         this.originalTab = originalTab;
-
-        typeText.text = fakeTab.name;
-
         containerTab.SetActive(true);
         isOpen = true;
 
@@ -61,9 +57,6 @@ public class TabView : MonoBehaviour
     public void CloseTab()
     {
         containerTab.SetActive(false);
-        textTab.text = "";
-        fakeTab = null;
-        originalTab = null;
         isOpen = false;
     }
 }

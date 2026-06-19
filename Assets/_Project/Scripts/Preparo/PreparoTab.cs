@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class PreparoTab : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     public bool busy = false;
     public GameObject ingredientHolder;
     public float prepareTime = 1f;

@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Vodka
   m_EditorClassIdentifier: Assembly-CSharp::Beverage
   ingredientName: Vodka
+  icon: {fileID: 21300000, guid: 2aff43be49830f44bb208c317ccf0ebe, type: 3}
   type: 1
+  friedVersion: {fileID: 0}
   isVegan: 0
   category: 1
   strength: 0
